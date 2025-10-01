@@ -1,1 +1,1 @@
-# Sanhak_CapstoneDesign-I
+# Sanhak_CapstoneDesign
