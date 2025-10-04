@@ -15,8 +15,8 @@
 | **프로젝트 관리** | `projects` | 프로젝트 생성, 설명, 방법론 선택 (WATERFALL/AGILE) | → `users.id` |
 | **프로젝트 멤버** | `project_members` | 프로젝트 참가 멤버, 역할(PM/PL/MEMBER), 권한(READ/WRITE/ADMIN) | → `users.id`, `projects.prj_id` |
 | **노트 / 회의 메모** | `notes` | 프로젝트별 메모, 회의 중 작성 내용 | → `projects.prj_id`, `users.id` |
-| **산출물 관리** | `deliverables` | 프로젝트 결과물 (보고서, 코드, 문서, 발표자료 등) | → `projects.prj_id` |
-| **회의록** | `meetings` | 회의 내용, 요약문, 녹음 파일 링크 | → `projects.prj_id` |
+| **산출물 관리** | `deliverables` | 프로젝트 결과물 (보고서, 코드, 문서, 발표자료 등) | → `projects.prj_id`, `users.id` |
+| **회의록** | `meetings` | 회의 내용, 요약문, 녹음 파일 링크 | → `projects.prj_id`, `users.id` |
 | **일정 / 간트차트** | `gantt_tasks` | 프로젝트 일정, 시작/종료일, 진행률(%) | → `projects.prj_id`, `users.id` |
 | **이슈 관리** | `issues` | 프로젝트 이슈 등록, 상태(OPEN/IN_PROGRESS/RESOLVED) | → `projects.prj_id`, `users.id` |
 | **메모 대시보드** | `memos` | 포스트잇 형태의 개인/팀 메모 관리 | → `projects.prj_id`, `users.id` |
