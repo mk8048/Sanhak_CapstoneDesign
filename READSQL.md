@@ -33,6 +33,8 @@
 ```text
 users (1) ────< project_members >──── (N) projects
    │                                  │
+   │                                  ├──< notes
+   │                                  ├──< gantt_tasks
    │                                  ├──< deliverables
    │                                  ├──< meetings
    │                                  ├──< issues
@@ -42,6 +44,3 @@ users (1) ────< project_members >──── (N) projects
    │                                  ├──< work_sessions
    │                                  ├──< messages
    │                                  └──< calendar_events
-   │
-   ├──< notes
-   └──< gantt_tasks
