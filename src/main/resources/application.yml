@@ -1,0 +1,14 @@
+# application.yml
+# resources 경로 밑
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+  datasource:
+    url: jdbc:h2:mem:testdb # localhost:8080/h2-console -> JDBC URL 경로
+  h2:
+    console:
+      enabled: true
