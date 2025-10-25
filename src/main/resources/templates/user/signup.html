@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <h1 align="center">캡스톤 매니저</h1>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+</head>
+<body>
+
+<form th:action="@{/user/signup}" method="POST">
+    <table align="center">
+        <tr><td colspan="2" align="center" height="40"><b>회원가입</b></td></tr>
+
+        <tr>
+            <td align="right">아이디&nbsp;</td>
+            <td><input type="text" name="id" required placeholder="사용할 아이디 입력"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">비밀번호&nbsp;</td>
+            <td><input type="password" name="password" required placeholder="비밀번호 입력"/></td>
+        </tr>
+        <tr>
+            <td align="right">비밀번호 확인&nbsp;</td>
+            <td><input type="password" name="passwordConfirm" required placeholder="비밀번호 재입력"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">이름&nbsp;</td>
+            <td><input type="text" name="name" required placeholder="이름을 입력하세요"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">이메일&nbsp;</td>
+            <td><input type="email" name="email" required placeholder="이메일 주소 입력"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">닉네임&nbsp;</td>
+            <td><input type="text" name="nickname" placeholder="별명을 입력하세요"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">전화번호&nbsp;</td>
+            <td><input type="tel" name="phone" placeholder="010-0000-0000"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">지역&nbsp;</td>
+            <td><input type="text" name="location" placeholder="거주 지역"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">직업/직무&nbsp;</td>
+            <td><input type="text" name="job" placeholder="개발자, 학생 등"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">가입 목적&nbsp;</td>
+            <td><input type="text" name="purpose" placeholder="서비스 이용 목적"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">GitHub URL&nbsp;</td>
+            <td><input type="url" name="github_url" placeholder="https://github.com/"/></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="50">
+                <input type="submit" value="회원가입"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="30">
+                <a th:href="@{/user/login}">
+                    <button type="button" style="padding: 5px;">로그인 페이지로 돌아가기</button>
+                </a>
+            </td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>

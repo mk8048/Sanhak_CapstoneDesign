@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+</head>
+<body>
+
+<form th:action="@{/user/login-success}" method="GET">
+    <table align="center">
+        <tr><td colspan="2" align="center" height="40"><b>캡스톤 매니저</b></td></tr>
+
+        <tr>
+            <td align="right">아이디&nbsp;</td>
+            <td><input type="text" name="id"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">패스워드&nbsp;</td>
+            <td><input type="password" name="ps" required/></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="30">
+                <a th:href="@{/user/signup}" style="float: left; margin-left: 10px;">
+                    <button type="button">회원가입</button>
+                </a>
+
+                <a th:href="@{/user/find-credentials}" style="float: right; margin-right: 10px;">
+                    <button type="button">아이디/비밀번호 찾기</button>
+                </a>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="50">
+                <input type="submit" value="로그인"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>
