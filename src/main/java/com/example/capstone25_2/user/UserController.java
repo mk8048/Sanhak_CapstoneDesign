@@ -95,6 +95,7 @@ public class UserController {
     // -- 아이디/비밀번호 찾기 --
     @GetMapping("/user/find-credentials")
     public String findCredentials(Model model) {
+        System.err.println("findCredentialsPage");
         return "/user/find_credentials";
     }
 
