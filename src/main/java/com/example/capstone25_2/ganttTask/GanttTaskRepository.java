@@ -1,6 +1,5 @@
-package com.example.capstone25_2.repository;
+package com.example.capstone25_2.ganttTask;
 
-import com.example.capstone25_2.domain.GanttTask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.example.capstone25_2.dto;
+package com.example.capstone25_2.ganttTask.dto;
 
 import lombok.Getter;
 import lombok.Setter;

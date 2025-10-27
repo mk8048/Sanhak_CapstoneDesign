@@ -1,4 +1,4 @@
-package com.example.capstone25_2.domain;
+package com.example.capstone25_2.ganttTask;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
