@@ -7,6 +7,8 @@ import com.example.capstone25_2.repository.GanttTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class GanttTaskService {
             dto.setEndDate(task.getEndDate());
             dto.setAssignedTo(task.getAssignedTo());
             dto.setProgress(task.getProgress());
+
+            long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), task.getEndDate());
+            dto.setDaysRemaining(remainingDays);
 
             dtoList.add(dto);
         }

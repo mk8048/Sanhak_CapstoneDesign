@@ -16,5 +16,6 @@ public class GanttTaskResponseDto {
     private LocalDate endDate;
     private Long assignedTo;
     private int progress;
+    private Long daysRemaining;
 
 }
