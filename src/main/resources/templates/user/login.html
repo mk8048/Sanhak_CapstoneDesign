@@ -6,13 +6,13 @@
 </head>
 <body>
 
-<form th:action="@{/user/login-success}" method="GET">
+<form th:action="@{/user/login}" method="POST">
     <table align="center">
         <tr><td colspan="2" align="center" height="40"><b>캡스톤 매니저</b></td></tr>
 
         <tr>
             <td align="right">아이디&nbsp;</td>
-            <td><input type="text" name="id"/></td>
+            <td><input type="text" name="id" th:value="${id}"/></td>
         </tr>
 
         <tr>
@@ -39,6 +39,40 @@
         </tr>
     </table>
 </form>
+
+<div th:if="${loginError}"
+     id="login-toast"
+     style="
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(220, 53, 69, 0.9);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        font-weight: bold;
+    ">
+    <span th:text="${loginError}">[에러 메시지]</span>
+</div>
+
+<script th:if="${loginError}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const toastElement = document.getElementById('login-toast');
+
+        setTimeout(() => {
+            toastElement.style.opacity = '1';
+        }, 100);
+
+        setTimeout(() => {
+            toastElement.style.opacity = '0';
+        }, 3500);
+    });
+</script>
 
 </body>
 </html>

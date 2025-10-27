@@ -13,7 +13,7 @@
 
         <tr>
             <td align="right">아이디&nbsp;</td>
-            <td><input type="text" name="id" required placeholder="사용할 아이디 입력"/></td>
+            <td><input type="text" name="id" required placeholder="사용할 아이디 입력" th:value="${userDto?.id}"/></td>
         </tr>
 
         <tr>
@@ -27,47 +27,47 @@
 
         <tr>
             <td align="right">이름&nbsp;</td>
-            <td><input type="text" name="name" required placeholder="이름을 입력하세요"/></td>
+            <td><input type="text" name="name" required placeholder="이름을 입력하세요" th:value="${userDto?.name}"/></td>
         </tr>
 
         <tr>
             <td align="right">이메일&nbsp;</td>
-            <td><input type="email" name="email" required placeholder="이메일 주소 입력"/></td>
+            <td><input type="email" name="email" required placeholder="이메일 주소 입력" th:value="${userDto?.email}"/></td>
         </tr>
 
         <tr>
             <td align="right">닉네임&nbsp;</td>
-            <td><input type="text" name="nickname" placeholder="별명을 입력하세요"/></td>
+            <td><input type="text" name="nickname" placeholder="별명을 입력하세요" th:value="${userDto?.nickname}"/></td>
         </tr>
 
         <tr>
             <td align="right">전화번호&nbsp;</td>
-            <td><input type="tel" name="phone" placeholder="010-0000-0000"/></td>
+            <td><input type="tel" name="phone" placeholder="010-0000-0000" th:value="${userDto?.phone}"/></td>
         </tr>
 
         <tr>
             <td align="right">지역&nbsp;</td>
-            <td><input type="text" name="location" placeholder="거주 지역"/></td>
+            <td><input type="text" name="location" placeholder="거주 지역" th:value="${userDto?.location}"/></td>
         </tr>
 
         <tr>
             <td align="right">직업/직무&nbsp;</td>
-            <td><input type="text" name="job" placeholder="개발자, 학생 등"/></td>
+            <td><input type="text" name="job" placeholder="개발자, 학생 등" th:value="${userDto?.job}"/></td>
         </tr>
 
         <tr>
             <td align="right">가입 목적&nbsp;</td>
-            <td><input type="text" name="purpose" placeholder="서비스 이용 목적"/></td>
+            <td><input type="text" name="purpose" placeholder="서비스 이용 목적" th:value="${userDto?.purpose}"/></td>
         </tr>
 
         <tr>
             <td align="right">GitHub URL&nbsp;</td>
-            <td><input type="url" name="github_url" placeholder="https://github.com/"/></td>
+            <td><input type="url" name="github_url" placeholder="https://github.com/" th:value="${userDto?.githubUrl}"/></td>
         </tr>
 
         <tr>
             <td align="right">프로필 이미지 URL&nbsp;</td>
-            <td><input type="url" name="profile_image_url" placeholder="이미지 주소"/></td>
+            <td><input type="url" name="profile_image_url" placeholder="이미지 주소" th:value="${userDto?.profileImageUrl}"/></td>
         </tr>
 
         <tr>
@@ -85,6 +85,40 @@
         </tr>
     </table>
 </form>
+
+<div th:if="${signupError}"
+     id="signup-toast"
+     style="
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(220, 53, 69, 0.9);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        font-weight: bold;
+    ">
+    <span th:text="${signupError}">[에러 메시지]</span>
+</div>
+
+<script th:if="${signupError}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const toastElement = document.getElementById('signup-toast');
+
+        setTimeout(() => {
+            toastElement.style.opacity = '1';
+        }, 100);
+
+        setTimeout(() => {
+            toastElement.style.opacity = '0';
+        }, 3500);
+    });
+</script>
 
 </body>
 </html>

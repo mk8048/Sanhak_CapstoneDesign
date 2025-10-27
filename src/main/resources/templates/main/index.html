@@ -8,7 +8,9 @@
 
 <h1 align="center" style="font-size: 3em;">이 페이지는 메인 페이지 입니다.</h1>
 
-<p align="center">로그인이 성공적으로 완료되었습니다.</p>
+<p align="center" style="font-size: 1.2em; font-weight: bold;">
+    접속한 계정 : <span th:text="${displayName}"></span>
+</p>
 
 <a th:href="@{/user/login}" style="display: block; width: fit-content; margin: 20px auto 0;">
     <button type="button">로그인 페이지로 돌아가기</button>

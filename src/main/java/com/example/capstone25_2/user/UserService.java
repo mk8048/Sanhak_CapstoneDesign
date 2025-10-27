@@ -1,18 +1,23 @@
 package com.example.capstone25_2.user;
 
+import com.example.capstone25_2.user.dto.UserLoginRequestDto;
 import com.example.capstone25_2.user.dto.UserSignupRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     // ⭐️ (향후 추가) private final PasswordEncoder passwordEncoder;
 
-    @Transactional // ⭐️ 데이터베이스에 변경 사항이 생길 때(C, U, D) 붙여주는 것이 좋습니다.
+    // -- 회원가입 --
+    @Transactional
     public User signup(UserSignupRequestDto dto) {
 
         // 1. 유효성 검증
@@ -35,5 +40,24 @@ public class UserService {
 
         // 4. DB에 저장 (save 메서드는 저장된 Entity를 반환)
         return userRepository.save(newUser);
+    }
+
+    // -- 로그인 --
+    public User login(UserLoginRequestDto dto) {
+        Optional<User> userOptional = userRepository.findById(dto.getId());
+
+        if(userOptional.isEmpty()) {
+            System.err.println("loginFailed : not exist " + dto.getId());
+            throw new IllegalArgumentException("아이디가 존재하지 않습니다.");
+        }
+
+        User user = userOptional.get();
+
+        if(!user.getPassword().equals(dto.getPs())){
+            System.err.println("loginFailed : password not match.");
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        return user;
     }
 }
