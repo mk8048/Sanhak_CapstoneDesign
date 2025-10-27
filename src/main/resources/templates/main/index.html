@@ -12,9 +12,9 @@
     접속한 계정 : <span th:text="${displayName}"></span>
 </p>
 
-<a th:href="@{/user/login}" style="display: block; width: fit-content; margin: 20px auto 0;">
-    <button type="button">로그인 페이지로 돌아가기</button>
-</a>
+<form th:action="@{/user/logout}" method="POST" align="center">
+    <button type="submit">로그아웃</button>
+</form>
 
 </body>
 </html>

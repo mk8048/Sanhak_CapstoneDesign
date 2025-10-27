@@ -48,7 +48,7 @@ public class User {
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // DTO를 Entity로 변환하는 정적 팩토리 메서드 (Builder 패턴을 사용해도 좋습니다)
+    // DTO를 Entity로 변환하는 정적 팩토리 메서드
     public static User from(UserSignupRequestDto dto) {
         User user = new User();
         user.id = dto.getId();

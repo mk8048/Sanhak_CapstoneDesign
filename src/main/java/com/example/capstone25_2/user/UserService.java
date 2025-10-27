@@ -1,5 +1,7 @@
 package com.example.capstone25_2.user;
 
+import com.example.capstone25_2.user.dto.UserFindIdRequestDto;
+import com.example.capstone25_2.user.dto.UserFindPsRequestDto;
 import com.example.capstone25_2.user.dto.UserLoginRequestDto;
 import com.example.capstone25_2.user.dto.UserSignupRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -60,4 +62,34 @@ public class UserService {
 
         return user;
     }
+
+    // -- 아이디 찾기 --
+    public User findId(UserFindIdRequestDto dto) {
+        Optional<User> userOptional = userRepository.findByNameAndEmail(dto.getName(),dto.getEmail());
+
+        if(userOptional.isEmpty()) {
+            System.err.println("findIdFailed : not exist");
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 계정이 없습니다.");
+        }
+
+        User user = userOptional.get();
+
+        return user;
+    }
+
+    // -- 비밀번호 찾기 --
+    public User findPs(UserFindPsRequestDto dto) {
+        Optional<User> userOptional = userRepository.findByIdAndNameAndEmail(
+                dto.getId(), dto.getName(), dto.getEmail());
+
+        if(userOptional.isEmpty()) {
+            System.err.println("findPsFailed : not exist");
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 계정 없습니다.");
+        }
+
+        User user = userOptional.get();
+
+        return user;
+    }
+
 }
