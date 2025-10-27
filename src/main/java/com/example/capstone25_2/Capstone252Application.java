@@ -2,15 +2,16 @@ package com.example.capstone25_2;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
+// ⭐️ 이 import 추가
+import org.springframework.boot.WebApplicationType;
 
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-@ComponentScan(basePackages = "com.example")
+@SpringBootApplication
 public class Capstone252Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Capstone252Application.class, args);
-	}
-
+    public static void main(String[] args) {
+        // ⭐️ WebApplicationType을 명시적으로 설정
+        SpringApplication application = new SpringApplication(Capstone252Application.class);
+        application.setWebApplicationType(WebApplicationType.SERVLET); // ⭐️ SERVLET (웹)으로 설정
+        application.run(args);
+    }
 }
