@@ -16,6 +16,15 @@
 </head>
 <body>
 <h2>👥 팀원별 커밋 기여도</h2>
+
+<form method="get" action="/github/commits/chart" style="margin-bottom: 12px;">
+    <label>시작일:</label>
+    <input type="date" name="since" th:value="${since}">
+    <label style="margin-left:10px;">종료일:</label>
+    <input type="date" name="until" th:value="${until}">
+    <button type="submit" style="margin-left:10px;">조회</button>
+</form>
+
 <canvas id="commitChart" style="max-width:900px; height:400px; margin-top:30px;"></canvas>
 
 <script th:inline="javascript">

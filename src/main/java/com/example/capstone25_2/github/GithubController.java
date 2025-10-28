@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Controller
 @RequestMapping("/github/commits")
@@ -62,19 +62,69 @@ public class GithubController {
     ) {
         return githubService.getCommits(owner, repo, branch, since, until, perPage, page);
     }
+
     // 팀원별 커밋 차트 페이지
     @GetMapping("/chart")
-    public String chart(Model model) {
-        // 기본 repo 기준으로 최근 커밋 목록 가져오기
-        List<GithubCommitDTO> commits = githubService.getCommits(null, null, null, null, null, 100, 1);
+    public String chart(
+            @RequestParam(required = false) String since,  // yyyy-MM-dd (KST 기준)
+            @RequestParam(required = false) String until,  // yyyy-MM-dd (KST 기준)
+            Model model) {
 
-        // author별 커밋 수 계산
+        final ZoneId KST = ZoneId.of("Asia/Seoul");
+        final java.time.ZoneOffset UTC = java.time.ZoneOffset.UTC;
+
+        // KST 하루 구간 → API 호출은 UTC로 변환
+        java.time.OffsetDateTime sinceUtc = null;            // KST 00:00 → UTC
+        java.time.OffsetDateTime untilUtcExclusive = null;   // 다음날 KST 00:00 → UTC (배타)
+
+        // 화면/로그용 표시 범위 (KST 00:00 ~ 23:59:59)
+        String displaySince = since;
+        String displayUntil = until;
+
+        try {
+            if (since != null && !since.isBlank()) {
+                var startKst = java.time.LocalDate.parse(since).atStartOfDay(KST); // yyyy-MM-dd 00:00:00 KST
+                sinceUtc = startKst.withZoneSameInstant(UTC).toOffsetDateTime();
+            }
+            if (until != null && !until.isBlank()) {
+                var endKstExclusive = java.time.LocalDate.parse(until)
+                        .plusDays(1)
+                        .atStartOfDay(KST); // 다음날 00:00:00 KST (배타)
+                untilUtcExclusive = endKstExclusive.withZoneSameInstant(UTC).toOffsetDateTime();
+            }
+
+            if (sinceUtc != null && untilUtcExclusive != null && sinceUtc.isAfter(untilUtcExclusive)) {
+                var tmp = sinceUtc;
+                sinceUtc = untilUtcExclusive.minusDays(1); // 대략 하루 앞당김
+                untilUtcExclusive = tmp.plusDays(1);
+            }
+
+        } catch (Exception e) {
+            System.out.println("날짜 파싱 오류: " + e.getMessage());
+        }
+
+        System.out.println("📅 KST 표시범위: " +
+                (displaySince != null ? displaySince + " 00:00:00" : "null") + " ~ " +
+                (displayUntil != null ? displayUntil + " 23:59:59" : "null"));
+        System.out.println("↳ API 호출범위(UTC, until exclusive): since=" + sinceUtc + ", until(excl)=" + untilUtcExclusive);
+
+        List<GithubCommitDTO> commits = githubService.getCommits(
+                null, null, null,
+                sinceUtc, untilUtcExclusive,
+                100, 1
+        );
+
         Map<String, Long> countMap = commits.stream()
                 .filter(c -> c.author() != null && c.author().login() != null)
-                .collect(Collectors.groupingBy(c -> c.author().login(), Collectors.counting()));
+                .collect(java.util.stream.Collectors.groupingBy(
+                        c -> c.author().login(), java.util.stream.Collectors.counting()));
 
-        // 차트용 데이터 (x: 작성자, y: 커밋 수)
         model.addAttribute("commitData", countMap);
+        model.addAttribute("since", displaySince);
+        model.addAttribute("until", displayUntil);
+
         return "github/commits_chart";
     }
+
 }
+
