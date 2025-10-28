@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title>팀원별 커밋 기여도</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
+        canvas { max-width: 600px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+<h2>👥 팀원별 커밋 기여도</h2>
+<canvas id="commitChart"></canvas>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const commitData = [[${commitData}]];
+
+    // Thymeleaf Map → JS 객체로 변환
+    const labels = Object.keys(commitData);
+    const values = Object.values(commitData);
+
+    const ctx = document.getElementById('commitChart');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '커밋 수',
+                data: values,
+                borderWidth: 1,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            },
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: '팀원별 커밋 수'
+                }
+            }
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/github/commits")
@@ -59,5 +61,20 @@ public class GithubController {
             @RequestParam(required = false, defaultValue = "1") Integer page
     ) {
         return githubService.getCommits(owner, repo, branch, since, until, perPage, page);
+    }
+    // 팀원별 커밋 차트 페이지
+    @GetMapping("/chart")
+    public String chart(Model model) {
+        // 기본 repo 기준으로 최근 커밋 목록 가져오기
+        List<GithubCommitDTO> commits = githubService.getCommits(null, null, null, null, null, 100, 1);
+
+        // author별 커밋 수 계산
+        Map<String, Long> countMap = commits.stream()
+                .filter(c -> c.author() != null && c.author().login() != null)
+                .collect(Collectors.groupingBy(c -> c.author().login(), Collectors.counting()));
+
+        // 차트용 데이터 (x: 작성자, y: 커밋 수)
+        model.addAttribute("commitData", countMap);
+        return "github/commits_chart";
     }
 }
