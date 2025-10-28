@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title>GitHub Commits</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; }
+        .toolbar { margin-bottom: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .commit { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .meta { font-size: 12px; color: #666; }
+        .msg { white-space: pre-wrap; font-weight: 600; margin: 6px 0; }
+        .avatar { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+    </style>
+</head>
+<body>
+<h2>GitHub Commits</h2>
+
+<form class="toolbar" method="get" th:action="@{/github/commits}">
+    <input type="text" name="owner" placeholder="owner" th:value="${owner}" />
+    <input type="text" name="repo" placeholder="repo" th:value="${repo}" />
+    <input type="text" name="branch" placeholder="branch" th:value="${branch}" />
+    <label>perPage <input type="number" name="perPage" min="1" max="100" th:value="${perPage}" /></label>
+    <label>page <input type="number" name="page" min="1" th:value="${page}" /></label>
+    <button type="submit">검색</button>
+</form>
+
+<div th:if="${#lists.isEmpty(commits)}">커밋이 없습니다.</div>
+
+<div th:each="c : ${commits}" class="commit">
+    <div class="msg" th:text="${c.commit().message()}">message</div>
+    <div class="meta">
+    <span th:if="${c.author() != null}">
+      <img th:src="${c.author().avatar_url()}" class="avatar" alt="avatar"/>
+      <a th:href="${c.author().html_url()}" th:text="${c.author().login()}">author</a>
+      •
+    </span>
+        <span th:text="${#temporals.format(c.commit().author().date().atZoneSameInstant(koreaTZ), 'yyyy-MM-dd HH:mm')}">2025-10-28 11:00</span>
+        • <a th:href="${c.html_url()}" target="_blank" th:text="${#strings.substring(c.sha,0,7)}">abcdef0</a>
+    </div>
+</div>
+
+<div class="toolbar">
+    <form method="get" th:action="@{/github/commits}">
+        <input type="hidden" name="owner" th:value="${owner}"/>
+        <input type="hidden" name="repo" th:value="${repo}"/>
+        <input type="hidden" name="branch" th:value="${branch}"/>
+        <input type="hidden" name="perPage" th:value="${perPage}"/>
+        <input type="hidden" name="page" th:value="${page - 1}"/>
+        <button type="submit" th:disabled="${page <= 1}">이전</button>
+    </form>
+
+    <span th:text="'Page ' + ${page}"></span>
+
+    <form method="get" th:action="@{/github/commits}">
+        <input type="hidden" name="owner" th:value="${owner}"/>
+        <input type="hidden" name="repo" th:value="${repo}"/>
+        <input type="hidden" name="branch" th:value="${branch}"/>
+        <input type="hidden" name="perPage" th:value="${perPage}"/>
+        <input type="hidden" name="page" th:value="${page + 1}"/>
+        <button type="submit">다음</button>
+    </form>
+</div>
+</body>
+</html>
