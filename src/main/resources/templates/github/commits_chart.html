@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8"/>
     <title>팀원별 커밋 기여도</title>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- DataLabels 플러그인 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
-        canvas { max-width: 600px; margin: 0 auto; }
+        body { font-family: "Pretendard", Arial, sans-serif; text-align: center; margin: 40px; }
+        canvas { max-width: 700px; margin: 0 auto; }
     </style>
 </head>
 <body>
 <h2>👥 팀원별 커밋 기여도</h2>
-<canvas id="commitChart"></canvas>
+<canvas id="commitChart" style="max-width:900px; height:400px; margin-top:30px;"></canvas>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
     const commitData = [[${commitData}]];
-
-    // Thymeleaf Map → JS 객체로 변환
     const labels = Object.keys(commitData);
     const values = Object.values(commitData);
 
-    const ctx = document.getElementById('commitChart');
+    const ctx = document.getElementById('commitChart').getContext('2d');
+
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -29,22 +33,38 @@
             datasets: [{
                 label: '커밋 수',
                 data: values,
-                borderWidth: 1,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
             }]
         },
         options: {
-            scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 } }
-            },
             plugins: {
                 legend: { display: false },
                 title: {
                     display: true,
-                    text: '팀원별 커밋 수'
+                    text: '팀원별 커밋 수',
+                    font: { size: 15 },
+                    padding: { top: 8, bottom: 20}
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: '#333',
+                    font: { weight: 'bold', size: 13 },
+                    formatter: function(value) {
+                        return value; // 막대 위 숫자 표시
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
                 }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
     /*]]>*/
 </script>
