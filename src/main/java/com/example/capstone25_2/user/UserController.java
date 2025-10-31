@@ -41,7 +41,7 @@ public class UserController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage", loggedInUser.getName() + "님 환영합니다!");
-            System.err.println("login Success" + loggedInUser.getId());
+            System.err.println("login Success: {" + loggedInUser.getId() + "}");
             return "redirect:/main";
 
         } catch (IllegalArgumentException e) {

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
+<nav class="sidebar" th:fragment="sidebarFragment">
+    <div class="profile" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: #f8f9fa; font-weight: bold; font-size: 1.1em;">
+        <span class="icon" style="margin-right: 15px;">👤</span> <span th:text="${displayName}"> </span>
+    </div>
+    <ul class="nav-menu">
+        <li class="active"><span class="icon" style="margin-right: 15px;">🏠</span> Home</li>
+        <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
+        <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
+        <li><span class="icon" style="margin-right: 15px;">📅</span> Schedule</li>
+        <li><span class="icon" style="margin-right: 15px;">📝</span> WorkList</li>
+        <li><span class="icon" style="margin-right: 15px;">📤</span> Outputs</li>
+        <li><span class="icon" style="margin-right: 15px;">❗</span> Issues</li>
+        <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
+        <li><span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart</li>
+        <li><span class="icon" style="margin-right: 15px;">👥</span> Members</li>
+        <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
+    </ul>
+</nav>
+</body>
+</html>

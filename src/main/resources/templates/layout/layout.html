@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>캡스톤 매니저</title>
+    <style>
+        /* 기본 스타일 초기화 */
+        body, h1, ul, p, input {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+        }
+
+        /* 전체 레이아웃 컨테이너 */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- 사이드바 (sidebar.html에서 가져올 부분의 스타일) --- */
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e0e0e0;
+            flex-shrink: 0; /* 창이 줄어도 사이드바 너비 유지 */
+        }
+        .sidebar .profile { /* ... 이하 사이드바 관련 스타일 ... */ }
+        .sidebar .nav-menu { list-style: none; }
+        .sidebar .nav-menu li { padding: 15px 10px; border-radius: 8px; cursor: pointer; }
+        .sidebar .nav-menu li:hover { background-color: #f1f3f5; }
+
+        /* --- 메인 콘텐츠 --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto; /* 내용 길어지면 여기서만 스크롤 */
+        }
+
+        /* --- 헤더 (제목 및 검색창) --- */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 20px 40px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative; /* 자식의 absolute 위치 기준점 */
+            height: 80px; /* 헤더 높이 고정 */
+        }
+        header .title {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        header .search-bar {
+            width: 40%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%); /* 수평 중앙 정렬 */
+        }
+        header .search-bar input {
+            width: 100%; padding: 12px 20px; border: 1px solid #ccc;
+            border-radius: 20px; font-size: 1em;
+        }
+        header .search-bar .search-icon {
+            position: absolute; right: 15px; top: 50%;
+            transform: translateY(-50%); color: #888;
+        }
+
+        /* --- 실제 페이지 콘텐츠가 들어갈 영역 --- */
+        .page-content {
+             padding: 40px;
+             flex-grow: 1;
+             background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 1. 사이드바 Fragment가 이 위치에 삽입됨 -->
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+
+    <!-- 2. 메인 콘텐츠 영역 -->
+    <div class="main-content">
+        <!-- 2-1. 상단 헤더 (공통) -->
+        <header>
+            <div class="title">캡스톤디자인 I</div>
+            <div class="search-bar">
+                <input type="text" placeholder="검색">
+                <span class="search-icon">🔍</span>
+            </div>
+        </header>
+
+        <!-- 2-2. 실제 페이지 내용이 이 위치에 삽입됨 -->
+        <main class="page-content" layout:fragment="content">
+            <!-- 이 P 태그는 다른 파일에서 content fragment를 정의하지 않았을 때만 보임 -->
+            <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
+        </main>
+    </div>
+</div>
+</body>
+</html>

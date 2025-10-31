@@ -29,6 +29,6 @@ public class HomeController {
         model.addAttribute("displayName", display_name);
 
         System.err.println("mainpage");
-        return "main/index";
+        return "main/main";
     }
 }
