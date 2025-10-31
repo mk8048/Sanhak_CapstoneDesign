@@ -1,7 +1,7 @@
 package com.example.capstone25_2.github;
 
 import lombok.Getter;
-import org.springframework.http.HttpStatusCode; // ← 여기!
+import org.springframework.http.HttpStatusCode;
 
 @Getter
 public class GithubApiException extends RuntimeException {
@@ -18,14 +18,14 @@ public class GithubApiException extends RuntimeException {
     }
 
     private final Reason reason;
-    private final HttpStatusCode httpStatus;     // ← HttpStatus → HttpStatusCode 로 교체
+    private final HttpStatusCode httpStatus;
     private final String responseBody;
     private final String rateLimitRemaining;
     private final String rateLimitResetEpoch;
 
     public GithubApiException(
             Reason reason,
-            HttpStatusCode httpStatus,          // ← 여기도 변경
+            HttpStatusCode httpStatus,
             String message,
             String responseBody,
             String rateLimitRemaining,
