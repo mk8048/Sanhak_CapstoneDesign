@@ -1,9 +1,6 @@
 package com.example.capstone25_2.user;
 
-import com.example.capstone25_2.user.dto.UserFindIdRequestDto;
-import com.example.capstone25_2.user.dto.UserFindPsRequestDto;
-import com.example.capstone25_2.user.dto.UserLoginRequestDto;
-import com.example.capstone25_2.user.dto.UserSignupRequestDto;
+import com.example.capstone25_2.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,4 +89,42 @@ public class UserService {
         return user;
     }
 
+    public User findById(String id) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if(userOptional.isEmpty()) {
+            throw new IllegalArgumentException("findByIdFailed : not exist");
+        }
+
+        return userOptional.get();
+    }
+
+    @Transactional
+    public void updateUser(String userId, UserUpdateDto dto) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found"));
+
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setNickname(dto.getNickname());
+        user.setPhone(dto.getPhone());
+        user.setLocation(dto.getLocation());
+        user.setJob(dto.getJob());
+        user.setPurpose(dto.getPurpose());
+        user.setGithubUrl(dto.getGithubUrl());
+        user.setProfileImageUrl(dto.getProfileImageUrl());
+
+        String newPassword = dto.getNewPassword();
+
+        if(newPassword != null && !newPassword.isEmpty()) {
+
+            if(!newPassword.equals(dto.getNewPasswordConfirm())) {
+                throw new IllegalArgumentException("newPassword not match.");
+            }
+
+            user.setPassword(newPassword);
+
+        }
+    }
 }

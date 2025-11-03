@@ -1,9 +1,6 @@
 package com.example.capstone25_2.user;
 
-import com.example.capstone25_2.user.dto.UserFindIdRequestDto;
-import com.example.capstone25_2.user.dto.UserFindPsRequestDto;
-import com.example.capstone25_2.user.dto.UserLoginRequestDto;
-import com.example.capstone25_2.user.dto.UserSignupRequestDto;
+import com.example.capstone25_2.user.dto.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -148,5 +145,55 @@ public class UserController {
         }
     }
 
+    // -- 마이페이지 --
+    @GetMapping("/user/mypage")
+    public String mypagePage(HttpSession httpSession, Model model) {
 
+        String userId = (String) httpSession.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
+
+        try{
+            User user = userService.findById(userId);
+            model.addAttribute("user", user);
+
+            System.err.println("mypagePage");
+            return "user/mypage";
+        } catch (IllegalArgumentException e){
+            return "redirect:/user/login";
+        }
+    }
+
+    @PostMapping("/user/mypage")
+    public String updateMyPage(@ModelAttribute UserUpdateDto requestDto,
+                               HttpSession httpSession,
+                               RedirectAttributes redirectAttributes) {
+        String userId = (String) httpSession.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
+
+        try{
+            userService.updateUser(userId, requestDto);
+
+            redirectAttributes.addFlashAttribute("mypageSuccess", true);
+            return "redirect:/user/mypage";
+        } catch (IllegalArgumentException e){
+            redirectAttributes.addFlashAttribute("mypageError", e.getMessage());
+            User user = userService.findById(userId);
+            user.setName(requestDto.getName());
+            user.setEmail(requestDto.getEmail());
+            user.setNickname(requestDto.getNickname());
+            user.setPhone(requestDto.getPhone());
+            user.setLocation(requestDto.getLocation());
+            user.setJob(requestDto.getJob());
+            user.setPurpose(requestDto.getPurpose());
+            user.setGithubUrl(requestDto.getGithubUrl());
+            user.setProfileImageUrl(requestDto.getProfileImageUrl());
+
+            return "redirect:/user/mypage";
+        }
+    }
 }

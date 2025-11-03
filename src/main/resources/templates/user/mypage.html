@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <h1 align="center">캡스톤 매니저</h1>
+    <meta charset="UTF-8">
+    <title>내 정보 수정</title>
+</head>
+<body>
+
+<form th:action="@{/user/mypage}" method="POST">
+    <table align="center">
+        <tr><td colspan="2" align="center" height="40"><b>내 정보 수정</b></td></tr>
+
+        <tr>
+            <td align="right">아이디&nbsp;</td>
+            <td><input type="text" name="id" th:value="${user.id}" readonly style="background-color: #eee;"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">새 비밀번호&nbsp;</td>
+            <td><input type="password" name="newPassword" placeholder="변경 시에만 입력"/></td>
+        </tr>
+        <tr>
+            <td align="right">비밀번호 확인&nbsp;</td>
+            <td><input type="password" name="newPasswordConfirm" placeholder="새 비밀번호 재입력"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">이름&nbsp;</td>
+            <td><input type="text" name="name" required th:value="${user.name}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">이메일&nbsp;</td>
+            <td><input type="email" name="email" required th:value="${user.email}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">닉네임&nbsp;</td>
+            <td><input type="text" name="nickname" placeholder="별명을 입력하세요" th:value="${user.nickname}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">전화번호&nbsp;</td>
+            <td><input type="tel" name="phone" placeholder="010-0000-0000" th:value="${user.phone}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">지역&nbsp;</td>
+            <td><input type="text" name="location" placeholder="거주 지역" th:value="${user.location}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">직업/직무&nbsp;</td>
+            <td><input type="text" name="job" placeholder="개발자, 학생 등" th:value="${user.job}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">가입 목적&nbsp;</td>
+            <td><input type="text" name="purpose" placeholder="서비스 이용 목적" th:value="${user.purpose}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">GitHub URL&nbsp;</td>
+            <td><input type="url" name="githubUrl" placeholder="https://github.com/" th:value="${user.githubUrl}"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">프로필 이미지 URL&nbsp;</td>
+            <td><input type="url" name="profileImageUrl" placeholder="이미지 주소" th:value="${user.profileImageUrl}"/></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="50">
+                <input type="submit" value="정보 수정 완료"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<hr style="margin: 30px auto; width: 400px;">
+
+<p align="center">
+    <a th:href="@{/index}">
+        <button type="button" style="padding: 10px 20px;">메인 화면으로 돌아가기</button>
+    </a>
+</p>
+
+<div th:with="
+        isError=${mypageError != null},
+        isSuccess=${mypageSuccess != null},
+        displayMessage=${isError ? mypageError : (isSuccess ? '정보가 성공적으로 수정되었습니다.' : null)}"
+
+     th:if="${displayMessage != null}"
+     id="mypage-toast"
+
+     th:styleappend="${isError ?
+     'background-color: rgba(220, 53, 69, 0.9);' : 'background-color: rgba(40, 167, 69, 0.9);'}"
+
+     style="
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        font-weight: bold;
+    ">
+    <span th:text="${displayMessage}">[메시지]</span>
+</div>
+
+<script th:if="${mypageError != null or mypageSuccess != null}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const toastElement = document.getElementById('mypage-toast');
+
+        setTimeout(() => {
+            toastElement.style.opacity = '1';
+        }, 100);
+
+        setTimeout(() => {
+            toastElement.style.opacity = '0';
+        }, 3500);
+    });
+</script>
+
+</body>
+</html>
