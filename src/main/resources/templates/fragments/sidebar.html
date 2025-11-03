@@ -3,8 +3,17 @@
 <body>
 <!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
 <nav class="sidebar" th:fragment="sidebarFragment">
-    <div class="profile" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: #f8f9fa; font-weight: bold; font-size: 1.1em;">
-        <span class="icon" style="margin-right: 15px;">👤</span> <span th:text="${displayName}"> </span>
+    <div class="profile-area">
+        <div class="profile-info" style="font-weight: bold; font-size: 1.1em;">
+            <span class="icon">👤</span> <span th:text="${displayName}"></span>
+        </div>
+        <div class="profile-actions">
+            <a th:href="@{/user/mypage}" class="action-link">마이 페이지</a>
+
+            <form th:action="@{/user/logout}" method="POST" class="logout-form">
+                <button type="submit" class="logout-btn">로그아웃</button>
+            </form>
+        </div>
     </div>
     <ul class="nav-menu">
         <li class="active"><span class="icon" style="margin-right: 15px;">🏠</span> Home</li>

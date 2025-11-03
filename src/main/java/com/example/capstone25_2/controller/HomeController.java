@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    @GetMapping("/main")
+    @GetMapping("/index")
     public String mainpage(HttpSession session, Model model) {
 
         String userName = (String) session.getAttribute("userName");
@@ -29,6 +29,6 @@ public class HomeController {
         model.addAttribute("displayName", display_name);
 
         System.err.println("mainpage");
-        return "main/main";
+        return "main/index";
     }
 }

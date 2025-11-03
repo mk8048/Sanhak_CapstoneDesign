@@ -31,9 +31,60 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid #e0e0e0;
-            flex-shrink: 0; /* 창이 줄어도 사이드바 너비 유지 */
+            flex-shrink: 0;
         }
-        .sidebar .profile { /* ... 이하 사이드바 관련 스타일 ... */ }
+
+        /* ⭐️ 추가된 프로필 영역 컨테이너 스타일 ⭐️ */
+        .profile-area {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* ⭐️ 액션 버튼 컨테이너 (마이페이지/로그아웃) ⭐️ */
+        .profile-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .profile-actions .action-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .profile-actions .logout-form {
+            margin: 0;
+        }
+
+        .profile-actions .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .profile-actions .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* --- 기존 사이드바 메뉴 스타일 유지 --- */
         .sidebar .nav-menu { list-style: none; }
         .sidebar .nav-menu li { padding: 15px 10px; border-radius: 8px; cursor: pointer; }
         .sidebar .nav-menu li:hover { background-color: #f1f3f5; }
@@ -43,7 +94,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            overflow: auto; /* 내용 길어지면 여기서만 스크롤 */
+            overflow: auto;
         }
 
         /* --- 헤더 (제목 및 검색창) --- */
@@ -53,8 +104,8 @@
             padding: 20px 40px;
             background-color: #ffffff;
             border-bottom: 1px solid #e0e0e0;
-            position: relative; /* 자식의 absolute 위치 기준점 */
-            height: 80px; /* 헤더 높이 고정 */
+            position: relative;
+            height: 80px;
         }
         header .title {
             font-size: 2em;
@@ -64,7 +115,7 @@
             width: 40%;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%); /* 수평 중앙 정렬 */
+            transform: translateX(-50%);
         }
         header .search-bar input {
             width: 100%; padding: 12px 20px; border: 1px solid #ccc;
@@ -77,20 +128,17 @@
 
         /* --- 실제 페이지 콘텐츠가 들어갈 영역 --- */
         .page-content {
-             padding: 40px;
-             flex-grow: 1;
-             background-color: #f8f9fa;
+            padding: 40px;
+            flex-grow: 1;
+            background-color: #f8f9fa;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- 1. 사이드바 Fragment가 이 위치에 삽입됨 -->
     <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
 
-    <!-- 2. 메인 콘텐츠 영역 -->
     <div class="main-content">
-        <!-- 2-1. 상단 헤더 (공통) -->
         <header>
             <div class="title">캡스톤디자인 I</div>
             <div class="search-bar">
@@ -99,9 +147,7 @@
             </div>
         </header>
 
-        <!-- 2-2. 실제 페이지 내용이 이 위치에 삽입됨 -->
         <main class="page-content" layout:fragment="content">
-            <!-- 이 P 태그는 다른 파일에서 content fragment를 정의하지 않았을 때만 보임 -->
             <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
         </main>
     </div>
