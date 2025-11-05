@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>GanttTask API 테스트</title>
+</head>
+<body>
+
+<h2>캡스톤 간트차트 작업 등록 (POST)</h2>
+<button id="create-btn">테스트 작업 1개 등록하기</button>
+<div id="create-result"></div>
+
+<hr>
+
+<h2>캡스톤 간트차트 작업 목록 (GET)</h2>
+<button id="read-btn">1번 프로젝트 작업 목록 조회하기</button>
+<div id="task-list-result">
+</div>
+
+<script>
+    const projectId = 1;
+
+    const createBtn = document.getElementById("create-btn");
+    const readBtn = document.getElementById("read-btn");
+    const createResultDiv = document.getElementById("create-result");
+    const readResultDiv = document.getElementById("task-list-result");
+
+    createBtn.onclick = function() {
+        const testTaskData = {
+            projectId: projectId,
+            name: "새로운 테스트 작업",
+            startDate: "2025-11-10",
+            endDate: "2025-11-20",
+            assignedTo: 1,
+            progress: 10
+        };
+
+        fetch("/api/gantt", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(testTaskData)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("작업 등록 성공");
+                createResultDiv.textContent = "✅ '새로운 테스트 작업'이 등록되었습니다.";
+            } else {
+                console.error("작업 등록 실패");
+                createResultDiv.textContent = "❌ 작업 등록에 실패했습니다. (F12 콘솔 확인)";
+            }
+        })
+        .catch(error => {
+            console.error("API 호출 중 오류 발생:", error);
+            createResultDiv.textContent = "❌ API 호출 오류. (F12 콘솔 확인)";
+        });
+    };
+
+    readBtn.onclick = function() {
+        readResultDiv.innerHTML = "";
+
+        fetch(`/api/gantt/project/${projectId}`)
+            .then(response => response.json())
+            .then(tasks => {
+                console.log("서버에서 받은 데이터:", tasks);
+
+                if (tasks.length === 0) {
+                    readResultDiv.textContent = "데이터가 없습니다. (등록 버튼을 먼저 눌러주세요)";
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const taskElement = document.createElement("p");
+                    taskElement.textContent = `
+                        작업명: ${task.name} |
+                        D-day: ${task.daysRemaining}일 |
+                        진행률: ${task.progress}%
+                    `;
+                    readResultDiv.appendChild(taskElement);
+                });
+            })
+            .catch(error => {
+                console.error("API 호출 중 오류 발생:", error);
+                readResultDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+            });
+    };
+</script>
+
+</body>
+</html>

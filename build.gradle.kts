@@ -31,6 +31,7 @@ dependencies {
 	implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("com.mysql:mysql-connector-j")
+    //runtimeOnly ("org.mariadb.jdbc:mariadb-java-client")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

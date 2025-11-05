@@ -15,3 +15,4 @@ public class Capstone252Application {
         application.run(args);
     }
 }
+
