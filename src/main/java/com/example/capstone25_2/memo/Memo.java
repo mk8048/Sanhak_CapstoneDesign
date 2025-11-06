@@ -1,6 +1,8 @@
 package com.example.capstone25_2.memo;
 
 import com.example.capstone25_2.memo.dto.AddMemoRequest;
+import com.example.capstone25_2.memo.dto.UpdateMemoListRequest;
+import com.example.capstone25_2.memo.dto.UpdateMemoCanvasRequest;
 import jakarta.persistence.*;
 import org.springframework.cglib.core.Local;
 
@@ -12,7 +14,9 @@ import java.time.LocalDateTime;
 public class Memo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
+    //Integer로 생성 시 1초에 하나씩 메모 생성하면 소진까지 68년 걸림
+
     @Column(nullable = false)
     private Integer project_id;
     @Column(nullable = false)
@@ -25,27 +29,58 @@ public class Memo {
     private Integer y_pos;
     @Column(nullable = false)
     private String color;
+
     @Column(updatable = false)
-    private LocalDateTime created_at = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @Column(updatable = false)
+    private LocalDateTime modifiedAt;
+
+    // JPA가 엔티티를 DB에 저장하기 직전에 호출됨
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.modifiedAt = LocalDateTime.now();
+    }
+
+    // DB에 있는 엔티티 데이터가 업데이트되기 직전에 호출됨
+    @PreUpdate
+    protected void onUpdate() {
+        this.modifiedAt = LocalDateTime.now();
+    }
+
+    protected Memo() {
+    }
+
 
     // DTO를 Entity로 변환하는 정적 팩토리 메서드
     public static Memo from(AddMemoRequest request) {
         Memo memo = new Memo();
+
         memo.project_id = request.getProject_id();
         memo.author_id = request.getAuthor_id();
         memo.content = request.getContent();
-        memo.x_pos = request.getX_pos();
-        memo.y_pos = request.getY_pos();
-        memo.color = request.getColor();
+        memo.x_pos = (request.getX_pos() != null) ? request.getX_pos() : 0;
+        memo.y_pos = (request.getY_pos() != null) ? request.getY_pos() : 0;
+        memo.color = (request.getColor() != null) ? request.getColor() : "#FFFFFF";
 
         return memo;
     }
 
+    public void updateList(UpdateMemoListRequest requestList) {
+        this.content = requestList.getContent();
+    }
 
+    public void updateCanvas(UpdateMemoCanvasRequest requestCanvas) {
+        this.content = requestCanvas.getContent();
+        this.x_pos = requestCanvas.getX_pos();
+        this.y_pos = requestCanvas.getY_pos();
+        this.color = requestCanvas.getColor();
+    }
 
 
     //@getter 대신
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
     public Integer getProject_id() {
@@ -66,29 +101,11 @@ public class Memo {
     public String getColor() {
         return color;
     }
-
-    //@setter 대신
-    public void  setId(Integer id) {
-        this.id = id;
-    }
-    public void  setProject_id(Integer project_id) {
-        this.project_id = project_id;
-    }
-    public void setAuthor_id(Integer author_id) {
-        this.author_id = author_id;
-    }
-    public void setContent(String content) {
-        this.content = content;
-    }
-    public void setX_pos(Integer x_pos) {
-        this.x_pos = x_pos;
-    }
-    public void setY_pos(Integer y_pos) {
-        this.y_pos = y_pos;
-    }
-    public void setColor(String color) {
-        this.color = color;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
 }

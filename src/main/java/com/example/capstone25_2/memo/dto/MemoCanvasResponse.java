@@ -2,31 +2,36 @@ package com.example.capstone25_2.memo.dto;
 
 import com.example.capstone25_2.memo.Memo;
 
-@SuppressWarnings({"LombokGetterMayBeUsed"})
-public class MemoMatrixResponse {
+import java.time.LocalDateTime;
 
-    private final Integer id;
+@SuppressWarnings({"LombokGetterMayBeUsed"})
+public class MemoCanvasResponse {
+
+    private final Long id;
     private final Integer author_id;
     private final String content;
     private final Integer x_pos;
     private final Integer y_pos;
     private final String color;
 
+    private final LocalDateTime createAt;
 
-    public MemoMatrixResponse(Memo memo) {
+
+    public MemoCanvasResponse(Memo memo) {
         this.id = memo.getId();
         this.author_id = memo.getAuthor_id();
         this.content = memo.getContent();
         this.x_pos = memo.getX_pos();
         this.y_pos = memo.getY_pos();
         this.color = memo.getColor();
+        this.createAt = memo.getCreatedAt();
     }
 
 
 
 
     //@getter 대신
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
     public Integer getAuthor_id() {
@@ -43,5 +48,8 @@ public class MemoMatrixResponse {
     }
     public String getColor() {
         return color;
+    }
+    public LocalDateTime getCreateAt() {
+        return createAt;
     }
 }
