@@ -1,0 +1,3 @@
+INSERT INTO template (category, title, content) VALUES ('README', '기본 README 양식', '# [프로젝트 이름]\n## 1. 프로젝트 소개\n- 한 줄 요약: (여기에 작성)\n- 개발 기간: 2025.xx.xx ~ 2025.xx.xx\n\n## 2. 기술 스택\n- Backend: Spring Boot, JPA, MySQL\n- Frontend: ...\n\n## 3. 주요 기능\n- 기능 1: ...');
+INSERT INTO template (category, title, content) VALUES ('ISSUE', '버그 리포트 양식', '###  버그 발생\n\n- [ ] **발생 일시**: 2025년 00월 00일 00시\n- [ ] **문제 상황**: (어떤 동작을 했을 때 에러가 났는지 설명)\n- [ ] **재현 방법**: (버그를 다시 발생시키는 순서)\n- [ ] **예상 결과**: (원래 되어야 하는 정상 동작)\n- [ ] **참고 자료**: (스크린샷, 로그 등)');
+INSERT INTO template (category, title, content) VALUES ('TIL', '개발 일지(TIL) 양식', '###  날짜: 2025-00-00\n\n##  오늘 한 일\n- [ ] 작업 1\n- [ ] 작업 2\n\n##  배운 점 & 어려웠던 점\n- (어떤 문제를 만났고, 어떻게 해결했는지 기록)\n\n##  내일 할 일\n- [ ] 다음 작업 예정');
