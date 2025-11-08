@@ -4,21 +4,19 @@ import com.example.capstone25_2.memo.dto.AddMemoRequest;
 import com.example.capstone25_2.memo.dto.UpdateMemoListRequest;
 import com.example.capstone25_2.memo.dto.UpdateMemoCanvasRequest;
 import jakarta.persistence.*;
-import org.springframework.cglib.core.Local;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "memos")
-@SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
+@SuppressWarnings({"LombokGetterMayBeUsed"})
 public class Memo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     //Integer로 생성 시 1초에 하나씩 메모 생성하면 소진까지 68년 걸림
 
-    @Column(nullable = false)
-    private Integer project_id;
+    @Column(nullable = true)
+    private Integer prj_id;
     @Column(nullable = false)
     private Integer author_id;
     @Column(nullable = false)
@@ -57,7 +55,7 @@ public class Memo {
     public static Memo from(AddMemoRequest request) {
         Memo memo = new Memo();
 
-        memo.project_id = request.getProject_id();
+        memo.prj_id = request.getProject_id();
         memo.author_id = request.getAuthor_id();
         memo.content = request.getContent();
         memo.x_pos = (request.getX_pos() != null) ? request.getX_pos() : 0;
@@ -83,8 +81,8 @@ public class Memo {
     public Long getId() {
         return id;
     }
-    public Integer getProject_id() {
-        return project_id;
+    public Integer getPrjId() {
+        return prj_id;
     }
     public Integer getAuthor_id() {
         return author_id;

@@ -2,6 +2,7 @@ package com.example.capstone25_2.user;
 
 import com.example.capstone25_2.user.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     // ⭐️ (향후 추가) private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     // -- 회원가입 --
     @Transactional
@@ -127,4 +129,18 @@ public class UserService {
 
         }
     }
+    /*
+    @Transactional
+    public void startFocusMode(Long pk_id) {
+        User user = userRepository.findById(pk_id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setFocusmode(true); //User 엔티티에 Focus mode 상태가 있다고 가정
+        //userRepository.save(user); // @Transactional에 의해 자동 변경 감지
+
+        //이벤트 발생
+        eventPublisher.publishEvent(new FocusModeEvent(user, true));
+    }
+
+     */
 }

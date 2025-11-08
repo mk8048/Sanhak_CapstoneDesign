@@ -4,7 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 // ⭐️ 이 import 추가
 import org.springframework.boot.WebApplicationType;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableAsync    // 비동기 사용
+@EnableScheduling //스케줄링 활성화
 @SpringBootApplication
 public class Capstone252Application {
 

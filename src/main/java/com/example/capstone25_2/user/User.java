@@ -42,6 +42,10 @@ public class User {
     private String githubUrl;
     private String profileImageUrl;
 
+    //집중 모드 상태
+    @Column(nullable = false)
+    private boolean focusMode;
+
     // DB에서 자동으로 관리되는 필드들
     @Column(updatable = false) // 생성 시에만 값이 들어가도록 설정
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -65,4 +69,12 @@ public class User {
 
         return user;
     }
+
+    //집중 모드
+    /*
+    public static User setFocusMode() {
+
+    }
+
+     */
 }
