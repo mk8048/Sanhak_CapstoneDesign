@@ -22,3 +22,12 @@ public class MeetingCreateRequestDto {
         return meeting;
     }
 }
+
+/*
+Postman 테스트용 JSON 예시:
+{
+  "title": "주간 회의",
+  "content": "진행 상황 공유 및 다음 주 계획 논의",
+  "summary": "모두 정상 진행 중, 특이사항 없음"
+}
+*/
