@@ -1,6 +1,7 @@
 package com.example.capstone25_2.project;
 
 import com.example.capstone25_2.project.dto.AddProjectRequest;
+import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -11,10 +12,10 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long prj_id;
+    private Long projectId;
 
     @Column(nullable = false, length = 100)
-    private String prj_name;
+    private String projectName;
 
     @Lob
     @Column(columnDefinition = "TEXT", nullable = true)
@@ -24,7 +25,7 @@ public class Project {
     private LocalDateTime createdAt;
 
     @Column(nullable = true)
-    private Long users_id;
+    private Long usersId;
 
     @PrePersist
     protected void onCreate() {
@@ -35,11 +36,18 @@ public class Project {
     public static Project from(AddProjectRequest request) {
         Project project = new Project();
 
-        project.prj_name = request.getPrjName();
+        project.projectName = request.getProjectName();
         project.description = request.getDescription();
-        project.users_id = request.getUsersId();
+        project.usersId = request.getUsersId();
 
         return project;
+    }
+
+    public void update(UpdateProjectRequest request) {
+
+        this.projectName = request.getProjectName();
+        this.description = request.getDescription();
+        this.usersId = request.getUsersId();
     }
 
 
@@ -47,12 +55,12 @@ public class Project {
     }
 
     // Getters
-    public Long getPrjId() {
-        return prj_id;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public String getPrjName() {
-        return prj_name;
+    public String getProjectName() {
+        return projectName;
     }
 
     public String getDescription() {
@@ -64,6 +72,6 @@ public class Project {
     }
 
     public Long getUsersId() {
-        return users_id;
+        return usersId;
     }
 }

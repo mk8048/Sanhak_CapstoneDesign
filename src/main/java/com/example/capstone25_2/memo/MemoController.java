@@ -83,8 +83,8 @@ public class MemoController {
     }
 
     @PutMapping("/api/memo/canvas/{id}")
-    public ResponseEntity<Memo> UpdateMemoPositionRequest(@PathVariable long id,
-                                                          @RequestBody UpdateMemoCanvasRequest request) {
+    public ResponseEntity<Memo> UpdateMemoPosition(@PathVariable long id,
+                                                   @RequestBody UpdateMemoCanvasRequest request) {
         Memo updatePositionMemo = memoService.updateCanvas(id, request);
 
         return ResponseEntity.ok()
@@ -101,8 +101,8 @@ public class MemoController {
     }
 
     @PutMapping("/api/memo/list/{id}")
-    public ResponseEntity<Memo> UpdateMemoContentRequest(@PathVariable long id,
-                                                         @RequestBody UpdateMemoListRequest request) {
+    public ResponseEntity<Memo> UpdateMemoContent(@PathVariable long id,
+                                                  @RequestBody UpdateMemoListRequest request) {
         Memo updateContentMemo = memoService.updateList(id, request);
 
         return ResponseEntity.ok()

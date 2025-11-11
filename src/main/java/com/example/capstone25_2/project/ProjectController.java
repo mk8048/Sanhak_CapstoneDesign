@@ -2,6 +2,7 @@ package com.example.capstone25_2.project;
 
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.ProjectResponse;
+import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,13 +31,30 @@ public class ProjectController {
 
         /*
             {
-                prj_name: "비상구"
+                projectName: "비상구"
                 description: "산학 협력 캡스톤 디자인"
-                users_id: "이민기", "차지만", "최민식", "정휘수"
+                usersId: "이민기", "차지만", "최민식", "정휘수"
             }
          */
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(saveProject);
+    }
+
+    @DeleteMapping("/api/project/{id}")
+    public ResponseEntity<Void> DeleteProject(@PathVariable Long id) {
+        projectService.delete(id);
+
+        return ResponseEntity.ok()
+                .build();
+    }
+
+    @PutMapping("/api/project/{id}")
+    public ResponseEntity<Project> UpdateProjectRequest(@PathVariable long id,
+                                                        @RequestBody UpdateProjectRequest request) {
+        Project updateProject = projectService.update(id, request);
+
+        return ResponseEntity.ok()
+                .body(updateProject);
     }
 }

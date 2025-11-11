@@ -2,6 +2,7 @@ package com.example.capstone25_2.project;
 
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.ProjectResponse;
+import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,4 +32,21 @@ public class ProjectService {
 
         return projectRepository.save(newProject);
     }
+
+    @Transactional
+    public void delete(long id) {
+        projectRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Project update(Long id, UpdateProjectRequest request) {
+
+        Project project = projectRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException("not found: " + id));
+        project.update(request);
+
+        return project;
+    }
 }
+
+
