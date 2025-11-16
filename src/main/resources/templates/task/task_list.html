@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>프로젝트 진행 현황</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .progress {
+            height: 25px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .task-done {
+            text-decoration: line-through;
+            color: #adb5bd; /* 회색 처리 */
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">📊 프로젝트 진행 현황</h2>
+
+                    <h5 class="text-muted text-center mb-4">
+                        Project ID: <span th:text="${progress.projectId}">1</span>
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">🕒 전체 예상 진행률 (시간 경과)</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary progress-bar-striped" role="progressbar"
+                                 th:style="'width: ' + ${progress.timeProgress} + '%'"
+                                 th:text="${progress.timeProgress} + '%'">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted">시작일부터 종료일까지 시간이 얼마나 지났는지 보여줍니다.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-success">✅ 현재 실제 진행률 (업무 완료)</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 th:style="'width: ' + ${progress.actualProgress} + '%'"
+                                 th:text="${progress.actualProgress} + '%'">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted">전체 할 일 중 완료된 항목의 비율입니다.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form action="/tasks/add" method="post" class="d-flex gap-2">
+                        <input type="text" name="title" class="form-control" placeholder="새로운 할 일을 입력하세요 (예: 로그인 UI 구현)" required>
+                        <button type="submit" class="btn btn-primary text-nowrap">+ 추가</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">📝 할 일 목록 (Check List)</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+
+                    <li class="list-group-item text-center py-4 text-muted" th:if="${#lists.isEmpty(progress.tasks)}">
+                        등록된 할 일이 없습니다.
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        th:each="task : ${progress.tasks}">
+
+                        <span th:text="${task.title}"
+                              th:classappend="${task.isCompleted} ? 'task-done' : ''"
+                              class="fs-5 text-truncate me-2">
+                            할 일 제목
+                        </span>
+
+                        <div class="d-flex gap-2 align-items-center">
+
+                            <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" class="m-0">
+                                <button type="submit"
+                                        class="btn btn-sm rounded-pill px-3 text-nowrap"
+                                        th:classappend="${task.isCompleted} ? 'btn-secondary' : 'btn-outline-success'">
+                                    <span th:if="${task.isCompleted}">취소</span>
+                                    <span th:unless="${task.isCompleted}">완료</span>
+                                </button>
+                            </form>
+
+                            <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" class="m-0"
+                                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 text-nowrap">
+                                    삭제
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
