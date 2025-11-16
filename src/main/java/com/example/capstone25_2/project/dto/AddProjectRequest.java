@@ -11,7 +11,6 @@ public class AddProjectRequest {
     private String projectName;
     private String description;
     private LocalDateTime createdAt;
-    private Long usersId;
 
 
     //@getter 대신
@@ -21,9 +20,6 @@ public class AddProjectRequest {
     public String getDescription() {
         return description;
     }
-    public Long getUsersId() {
-        return usersId;
-    }
 
     //@setter 대신
     public void setProjectName(String projectName) {
@@ -31,9 +27,6 @@ public class AddProjectRequest {
     }
     public void setDescription(String description) {
         this.description = description;
-    }
-    public void setUsersId(Long usersId) {
-        this.usersId = usersId;
     }
 
 }

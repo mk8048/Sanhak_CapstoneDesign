@@ -17,30 +17,37 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
+    // 1. 프로젝트 목록 조회 (REST)
     @GetMapping("/api/project")
     public ResponseEntity<List<ProjectResponse>> findProject() {
-        List<ProjectResponse> projects = projectService.findProject();
+
+        // 🚨 임시 사용자 ID 설정 (실제로는 SecurityContext에서 가져와야 함)
+        String currentUserId = "API_USER";
+
+        // ⭐️ findProject() 대신 findProjectsByUserId()를 호출합니다. ⭐️
+        List<ProjectResponse> projects = projectService.findProjectsByUserId(currentUserId);
 
         return ResponseEntity.ok()
                 .body(projects);
     }
 
+    // 2. 프로젝트 생성 (REST)
     @PostMapping("/api/project")
     public ResponseEntity<Project> addProject(@RequestBody AddProjectRequest request) {
-        Project saveProject = projectService.save(request);
 
-        /*
-            {
-                projectName: "비상구"
-                description: "산학 협력 캡스톤 디자인"
-                usersId: "이민기", "차지만", "최민식", "정휘수"
-            }
-         */
+        // 🚨 임시 처리: REST API 호출 시 사용자 ID를 알 수 없으므로,
+        // 현재는 하드코딩하거나(비권장), 헤더에서 추출해야 합니다.
+        // 여기서는 임시로 "API_USER"라는 ID를 전달한다고 가정합니다.
+        String tempCreatorId = "API_USER";
+
+        // ⭐️ ProjectService.save()의 시그니처 변경에 맞춰 creatorId 인자 추가 ⭐️
+        Project saveProject = projectService.save(tempCreatorId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(saveProject);
     }
 
+    // 3. 프로젝트 삭제 (REST)
     @DeleteMapping("/api/project/{id}")
     public ResponseEntity<Void> DeleteProject(@PathVariable Long id) {
         projectService.delete(id);
@@ -49,6 +56,7 @@ public class ProjectController {
                 .build();
     }
 
+    // 4. 프로젝트 수정 (REST)
     @PutMapping("/api/project/{id}")
     public ResponseEntity<Project> UpdateProjectRequest(@PathVariable long id,
                                                         @RequestBody UpdateProjectRequest request) {

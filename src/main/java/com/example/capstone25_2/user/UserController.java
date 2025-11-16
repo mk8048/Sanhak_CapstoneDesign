@@ -39,7 +39,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute(
                     "successMessage", loggedInUser.getName() + "님 환영합니다!");
             System.err.println("login Success: {" + loggedInUser.getId() + "}");
-            return "redirect:/index";
+            return "redirect:/projects";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("loginError", e.getMessage());
@@ -155,6 +155,12 @@ public class UserController {
             return "redirect:/user/login";
         }
 
+        // ⭐️ 1. 세션에서 현재 프로젝트 ID를 가져옵니다. ⭐️
+        Long currentProjectId = (Long) httpSession.getAttribute("currentProjectId");
+
+        // ⭐️ 2. Model에 담아 HTML로 전달합니다. ⭐️
+        model.addAttribute("currentProjectId", currentProjectId);
+
         try{
             User user = userService.findById(userId);
             model.addAttribute("user", user);
@@ -176,11 +182,16 @@ public class UserController {
         }
 
         try{
-            userService.updateUser(userId, requestDto);
+            User updatedUser = userService.updateUser(userId, requestDto);
+
+            // 세션 변수를 새로운 값으로 즉시 갱신
+            httpSession.setAttribute("userName", updatedUser.getName());
+            httpSession.setAttribute("userNickname", updatedUser.getNickname());
 
             redirectAttributes.addFlashAttribute("mypageSuccess", true);
             return "redirect:/user/mypage";
-        } catch (IllegalArgumentException e){
+        }
+        catch (IllegalArgumentException e){
             redirectAttributes.addFlashAttribute("mypageError", e.getMessage());
             User user = userService.findById(userId);
             user.setName(requestDto.getName());
@@ -194,6 +205,36 @@ public class UserController {
             user.setProfileImageUrl(requestDto.getProfileImageUrl());
 
             return "redirect:/user/mypage";
+        }
+    }
+
+    // -- 회원 탈퇴 --
+    @PostMapping("/user/delete")
+    public String deleteUser(HttpSession session, RedirectAttributes redirectAttributes) {
+
+        String userId = (String) session.getAttribute("userId");
+
+        // 1. 비로그인 상태 체크
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
+
+        try {
+            // 2. Service 호출 및 DB에서 사용자 삭제
+            userService.deleteUser(userId);
+
+            // 3. 세션 무효화 (필수 로그아웃 처리)
+            session.invalidate();
+
+            // 4. 성공 메시지 담아 로그인 페이지로 이동
+            redirectAttributes.addFlashAttribute("successMessage", "회원 탈퇴가 완료되었습니다.");
+            return "redirect:/user/login";
+
+        } catch (IllegalArgumentException e) {
+            // 5. 사용자를 찾을 수 없는 등 오류 발생 시 처리
+            session.invalidate(); // 보안을 위해 세션은 파기
+            redirectAttributes.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다.");
+            return "redirect:/user/login";
         }
     }
 }

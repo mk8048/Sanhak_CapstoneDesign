@@ -101,8 +101,9 @@ public class UserService {
         return userOptional.get();
     }
 
+    // -- 프로필 수정 --
     @Transactional
-    public void updateUser(String userId, UserUpdateDto dto) {
+    public User updateUser(String userId, UserUpdateDto dto) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
@@ -119,16 +120,35 @@ public class UserService {
 
         String newPassword = dto.getNewPassword();
 
+
         if(newPassword != null && !newPassword.isEmpty()) {
+
+            if (newPassword.equals(user.getPassword())) {
+                throw new IllegalArgumentException("동일한 비밀번호로는 수정할 수 없습니다.");
+            }
 
             if(!newPassword.equals(dto.getNewPasswordConfirm())) {
                 throw new IllegalArgumentException("newPassword not match.");
             }
 
             user.setPassword(newPassword);
-
         }
+
+        return user;
     }
+
+    // -- 회원 탈퇴 --
+    @Transactional
+    public void deleteUser(String userId) {
+
+        // 1. 로그인 ID(String)를 사용하여 사용자 엔티티를 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("탈퇴할 사용자 정보를 찾을 수 없습니다."));
+
+        // 2. 엔티티 삭제
+        userRepository.delete(user);
+    }
+
     /*
     @Transactional
     public void startFocusMode(Long pk_id) {

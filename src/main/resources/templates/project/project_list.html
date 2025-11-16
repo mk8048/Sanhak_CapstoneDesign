@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+
+<h1 align="center" style="margin-top: 30px;">나의 프로젝트</h1>
+
+<table class="project-list-container">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>프로젝트명</th> <th>설명</th>
+        <th>생성일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="project : ${projectList}" class="project-item">
+        <td th:text="${project.projectId}">1</td>
+
+        <td>
+            <a th:href="@{'/projects/' + ${project.projectId} + '/main'}" th:text="${project.projectName}">프로젝트명</a>
+        </td>
+
+        <td th:text="${project.description}">산학협력 프로젝트</td>
+
+        <td th:text="${#temporals.format(project.createdAt, 'yyyy-MM-dd')}">2025-10-27</td>
+    </tr>
+
+    <tr th:if="${#lists.isEmpty(projectList)}">
+        <td colspan="4" align="center">소속된 프로젝트가 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="create-button-container">
+    <a th:href="@{/project/new}">
+        <button type="button" class="create-button">
+            ➕ 새 프로젝트 생성
+        </button>
+    </a>
+</div>
+
+</body>
+</html>
