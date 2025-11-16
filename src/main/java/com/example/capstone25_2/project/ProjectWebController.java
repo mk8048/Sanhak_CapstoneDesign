@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpSession; // HttpSession import
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -34,6 +31,8 @@ public class ProjectWebController {
     public String getProjectList(HttpSession session, Model model) {
         try {
             String userId = getUserId(session);
+
+            model.addAttribute("currentUserId", userId);
 
             // ⭐️ Service에서 사용자별 프로젝트 목록 조회
             List<ProjectResponse> projects = projectService.findProjectsByUserId(userId);
@@ -116,6 +115,34 @@ public class ProjectWebController {
             return "redirect:/projects";
         } catch (IllegalArgumentException e) {
             return "redirect:/projects";
+        }
+    }
+
+    @PostMapping("/project/leave")
+    public String leaveProject(@RequestParam Long projectId, HttpSession session, RedirectAttributes redirectAttributes) {
+
+        String userId = (String) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/user/login"; // 로그인 세션 없으면 로그인 페이지로
+        }
+
+        try {
+            // Service 호출하여 프로젝트 탈퇴
+            projectService.leaveProject(userId, projectId);
+
+            redirectAttributes.addFlashAttribute("mypageSuccess", "프로젝트에서 성공적으로 탈퇴했습니다. 다른 프로젝트를 선택해주세요.");
+
+            // 프로젝트 목록 페이지로 리다이렉트
+            return "redirect:/projects";
+
+        } catch (IllegalArgumentException e) {
+            // 오류 발생 시 마이페이지로 돌아가기 (에러 토스트 메시지 표시)
+            redirectAttributes.addFlashAttribute("mypageError", e.getMessage());
+            return "redirect:/user/mypage";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mypageError", "처리 중 알 수 없는 오류가 발생했습니다.");
+            return "redirect:/user/mypage";
         }
     }
 }

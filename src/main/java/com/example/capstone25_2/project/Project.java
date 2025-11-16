@@ -3,10 +3,20 @@ package com.example.capstone25_2.project;
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import jakarta.persistence.*;
+import lombok.Getter; // ⭐️ Lombok 적용
+import lombok.Setter; // ⭐️ Lombok 적용
+import lombok.NoArgsConstructor; // ⭐️ Lombok 적용
+import lombok.AccessLevel; // ⭐️ Lombok 적용
+
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "projects")
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuppressWarnings({"LombokGetterMayBeUsed"})
 public class Project {
 
@@ -24,10 +34,18 @@ public class Project {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // 프로젝트 소유자 ID (Owner PK)
     @Column(nullable = true)
-    private Long usersId; // 프로젝트 생성자/소유자 ID
+    private Long usersId;
 
-    @PrePersist
+    // ⭐️ 프로젝트 참여자 목록 (ElementCollection) ⭐️
+    @ElementCollection
+    @CollectionTable(name = "project_members", joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "member_id")
+    private Set<String> memberIds = new HashSet<>();
+
+
+    @PrePersist // 엔티티 저장 전 호출
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
@@ -36,47 +54,25 @@ public class Project {
     public static Project from(AddProjectRequest request) {
         Project project = new Project();
 
-        project.projectName = request.getProjectName();
-        project.description = request.getDescription();
-        // usersId는 로그인 후 Service에서 따로 설정되므로 DTO에서 직접 받지 않습니다.
-        // project.usersId = request.getUsersId(); // 이 줄은 Service에서 처리하므로 삭제 또는 주석 처리 권장
+        project.setProjectName(request.getProjectName());
+        project.setDescription(request.getDescription());
 
         return project;
     }
 
+    // 정보 수정 메서드
     public void update(UpdateProjectRequest request) {
-
-        this.projectName = request.getProjectName();
-        this.description = request.getDescription();
-        // this.usersId = request.getUsersId(); // usersId는 일반적으로 update 시 DTO에서 받지 않습니다.
+        this.setProjectName(request.getProjectName());
+        this.setDescription(request.getDescription());
+        // usersId는 소유자이므로 이 메서드에서 변경하지 않는 것이 일반적입니다.
     }
 
-
-    protected Project() {
+    public void removeMember(String userId) {
+        this.memberIds.remove(userId);
     }
 
-    // Getters
-    public Long getProjectId() {
-        return projectId;
+    public void addMember(String userId) {
+        this.memberIds.add(userId);
     }
 
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUsersId() {
-        return usersId;
-    }
-
-    public void setUsersId(Long usersId) {
-        this.usersId = usersId;
-    }
 }
