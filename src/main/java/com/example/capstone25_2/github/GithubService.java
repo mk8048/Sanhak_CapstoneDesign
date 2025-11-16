@@ -1,6 +1,8 @@
 package com.example.capstone25_2.github;
 
 import com.example.capstone25_2.github.dto.GithubCommitDTO;
+import com.example.capstone25_2.github.dto.GithubRepoDTO;
+import com.example.capstone25_2.github.dto.GithubSearchResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -197,5 +199,31 @@ public class GithubService {
         Throwable cur = t;
         while (cur.getCause() != null && cur.getCause() != cur) cur = cur.getCause();
         return cur;
+    }
+
+    // 오픈소스 프로젝트 검색 및 추천 기능
+    public List<GithubRepoDTO> searchOpenSourceProjects(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return List.of();
+        }
+
+        // 검색 API URL 빌드
+        // q=키워드 & sort=stars(별순) & order=desc(내림차순)
+        UriComponentsBuilder ub = UriComponentsBuilder
+                .fromHttpUrl(baseUrl + "/search/repositories")
+                .queryParam("q", keyword)
+                .queryParam("sort", "stars")
+                .queryParam("order", "desc")
+                .queryParam("per_page", 10); // 상위 10개만 추천
+
+        try {
+            GithubSearchResponse body = rt.getForObject(ub.toUriString(), GithubSearchResponse.class);
+
+            return body != null && body.items() != null ? body.items() : List.of();
+
+        } catch (Exception e) {
+            log.error("오픈소스 검색 실패: {}", e.getMessage());
+            return List.of(); // 에러나면 빈 리스트 반환 (시스템 멈춤 방지)
+        }
     }
 }

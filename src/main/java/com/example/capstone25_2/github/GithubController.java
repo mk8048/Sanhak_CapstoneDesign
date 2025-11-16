@@ -1,6 +1,7 @@
 package com.example.capstone25_2.github;
 
 import com.example.capstone25_2.github.dto.GithubCommitDTO;
+import com.example.capstone25_2.github.dto.GithubRepoDTO;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -136,5 +137,21 @@ public class GithubController {
         model.addAttribute("until", displayUntil);
 
         return "github/commits_chart";
+    }
+
+    @GetMapping("/recommend")
+    public String recommend(
+            @RequestParam(required = false) String keyword,
+            Model model
+    ) {
+        // 키워드가 없으면 기본값으로 "Spring Boot" 설정 (또는 빈 화면)
+        String searchKeyword = (keyword != null) ? keyword : "Spring Boot Project";
+
+        List<GithubRepoDTO> repos = githubService.searchOpenSourceProjects(searchKeyword);
+
+        model.addAttribute("repos", repos);
+        model.addAttribute("keyword", searchKeyword);
+
+        return "github/recommend";
     }
 }
