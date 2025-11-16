@@ -1,6 +1,5 @@
 package com.example.capstone25_2.github;
 
-import com.example.capstone25_2.github.GithubService;
 import com.example.capstone25_2.github.dto.GithubCommitDTO;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -10,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.*;
-
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/github/commits")
@@ -115,9 +114,11 @@ public class GithubController {
         );
 
         Map<String, Long> countMap = commits.stream()
-                .filter(c -> c.author() != null && c.author().login() != null)
-                .collect(java.util.stream.Collectors.groupingBy(
-                        c -> c.author().login(), java.util.stream.Collectors.counting()));
+                .filter(c -> c.getAuthorName() != null)
+                .collect(Collectors.groupingBy(
+                        GithubCommitDTO::getAuthorName,
+                        Collectors.counting()
+                ));
 
         model.addAttribute("commitData", countMap);
         model.addAttribute("since", displaySince);
@@ -125,6 +126,4 @@ public class GithubController {
 
         return "github/commits_chart";
     }
-
 }
-
