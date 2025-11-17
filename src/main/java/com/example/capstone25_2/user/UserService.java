@@ -149,6 +149,16 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    @Transactional(readOnly = true)
+    public User findUserByEmailOrId(String emailOrId) {
+        // 1. ID로 먼저 찾기
+        return userRepository.findById(emailOrId)
+                // 2. ID로 못 찾으면 Email로 찾기
+                .orElseGet(() -> userRepository.findByEmail(emailOrId)
+                        // 3. 둘 다 없으면 예외 발생
+                        .orElseThrow(() -> new IllegalArgumentException("'" + emailOrId + "' 사용자를 찾을 수 없습니다.")));
+    }
+
     /*
     @Transactional
     public void startFocusMode(Long pk_id) {

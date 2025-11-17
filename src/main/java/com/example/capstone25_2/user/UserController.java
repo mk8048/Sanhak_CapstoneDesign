@@ -17,6 +17,14 @@ public class UserController {
 
     private final UserService userService;
 
+    @ModelAttribute
+    public void addProjectContextToModel(HttpSession session, Model model) {
+        Long projectId = (Long) session.getAttribute("currentProjectId");
+        if (projectId != null) {
+            model.addAttribute("currentProjectId", projectId);
+        }
+    }
+
     // -- 로그인 --
     @GetMapping({"/user/login", "/"})
     public String loginPage(Model model) {

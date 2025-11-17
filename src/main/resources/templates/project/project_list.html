@@ -77,7 +77,8 @@
         </td>
         <td th:text="${project.description}">산학협력 프로젝트</td>
         <td th:text="${#temporals.format(project.createdAt, 'yyyy-MM-dd')}">2025-10-27</td>
-        <td th:text="${project.ownerLoginId}">user_1</td>
+
+        <td th:text="${project.allMemberIds}">owner_id, member_a, member_b</td>
     </tr>
 
     <tr th:if="${#lists.isEmpty(projectList)}">

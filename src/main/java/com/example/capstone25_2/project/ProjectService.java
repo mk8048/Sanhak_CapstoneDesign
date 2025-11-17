@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Optional; // Optional import 추가
 
@@ -37,14 +39,34 @@ public class ProjectService {
 
     // ⭐️ [MODIFIED] 프로젝트 목록 조회: memberIds 기준으로 변경 ⭐️
     public List<ProjectResponse> findProjectsByUserId(String userId) {
-        // ⭐️ memberIds Set에 해당 userId(String)가 포함된 프로젝트를 조회 ⭐️
+        Long userPkId = getUserPkId(userId);
         List<Project> projects = projectRepository.findAllByMemberIdsContaining(userId);
 
         return projects.stream()
                 .map(project -> {
-                    // ProjectResponse 생성 시 소유자 로그인 ID를 조회하여 전달
+                    // 1. 소유자 로그인 ID 조회
                     String ownerLoginId = getLoginIdByUserPk(project.getUsersId());
-                    return new ProjectResponse(project, ownerLoginId);
+
+                    // 2. ⭐️ 모든 멤버 ID (Set<String>)를 가져옵니다.
+                    Set<String> memberSet = project.getMemberIds();
+
+                    // 3. ⭐️ 정렬된 리스트 생성 (소유자 우선)
+                    List<String> sortedMembers = new ArrayList<>();
+                    if (memberSet.contains(ownerLoginId)) {
+                        sortedMembers.add(ownerLoginId); // 1. 소유자 ID를 맨 앞에 추가
+                    }
+
+                    // 4. ⭐️ 소유자를 제외한 나머지 멤버 추가
+                    memberSet.stream()
+                            .filter(id -> !id.equals(ownerLoginId))
+                            .sorted() // (알파벳 순 정렬)
+                            .forEach(sortedMembers::add);
+
+                    // 5. ⭐️ 쉼표(,)로 구분된 문자열로 변환
+                    String allMembers = String.join(", ", sortedMembers);
+
+                    // 6. ⭐️ 수정된 DTO 생성자 호출
+                    return new ProjectResponse(project, ownerLoginId, allMembers);
                 })
                 .collect(Collectors.toList());
     }
@@ -104,7 +126,6 @@ public class ProjectService {
     }
 
 
-    // ... (delete, update, getProjectNameById 메서드는 로직상 변화 없음) ...
     @Transactional
     public void delete(long id) {
         projectRepository.deleteById(id);
@@ -126,5 +147,68 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
         return project.getProjectName();
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getProjectMembers(Long projectId) {
+
+        // 1. Project Entity를 조회합니다. (memberIds Set을 가져오기 위해)
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        // 2. ⭐️ 멤버들의 로그인 ID (String) Set을 가져옵니다. ⭐️
+        Set<String> memberLoginIds = project.getMemberIds();
+
+        if (memberLoginIds.isEmpty()) {
+            return List.of(); // 멤버가 없으면 빈 리스트 반환
+        }
+
+        // 3. ⭐️ UserRepository에 새 쿼리 메서드가 필요: List<User> findAllByIdIn(Collection<String> ids); ⭐️
+        // List<User> members = userRepository.findAllByIdIn(memberLoginIds);
+
+        // 🚨 현재 UserRepository에는 이 쿼리가 없으므로, 로직은 주석 처리하고 가정합니다.
+        // 임시로, Service가 User Repository를 통해 memberLoginIds에 해당하는 User 객체 목록을 반환한다고 가정하겠습니다.
+
+        // return members;
+        return userRepository.findAllByIdIn(memberLoginIds); // ⭐️ 이 메서드가 UserRepository에 추가되어야 합니다.
+    }
+
+    @Transactional(readOnly = true)
+    public Project getProjectById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+    }
+
+    @Transactional
+    public void inviteMember(Long projectId, String emailOrId) {
+
+        // 1. 초대할 사용자 조회
+        // ID로 먼저 찾아보고, 없으면 Email로 찾습니다.
+        User userToInvite = userRepository.findById(emailOrId)
+                .orElseGet(() -> userRepository.findByEmail(emailOrId)
+                        .orElseThrow(() -> new IllegalArgumentException("'" + emailOrId + "' 사용자를 찾을 수 없습니다.")));
+
+        // 2. 프로젝트 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        // 3. 이미 참여 중인지 확인
+        if (project.getMemberIds().contains(userToInvite.getId())) {
+            throw new IllegalArgumentException("이미 참여 중인 멤버입니다.");
+        }
+
+        // 4. ⭐️ 프로젝트의 memberIds Set에 사용자 로그인 ID(String) 추가 ⭐️
+        project.addMember(userToInvite.getId());
+
+        // (트랜잭션 종료 시 Dirty Checking으로 자동 저장됨)
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isUserInProject(String userId, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        // Project 엔티티의 memberIds Set에 userId가 포함되어 있는지 확인
+        return project.getMemberIds().contains(userId);
     }
 }

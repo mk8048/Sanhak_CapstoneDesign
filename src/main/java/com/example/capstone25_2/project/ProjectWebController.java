@@ -2,6 +2,8 @@ package com.example.capstone25_2.project;
 
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.ProjectResponse;
+import com.example.capstone25_2.user.User;
+import com.example.capstone25_2.user.UserService;
 import jakarta.servlet.http.HttpSession; // HttpSession import
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,30 @@ import java.util.List;
 public class ProjectWebController {
 
     private final ProjectService projectService;
+    private final UserService userService;
+
+    @ModelAttribute
+    public void addCommonAttributesToModel(HttpSession session, Model model) {
+        // 1. currentProjectId 주입
+        Long projectId = (Long) session.getAttribute("currentProjectId");
+        if (projectId != null) {
+            model.addAttribute("currentProjectId", projectId);
+        }
+
+        // 2. ⭐️ displayName 주입 (닉네임/이름 우선순위) ⭐️
+        String userName = (String) session.getAttribute("userName");
+        String userNickname = (String) session.getAttribute("userNickname");
+
+        if (userName != null) { // 로그인 상태일 때만
+            String displayName;
+            if (userNickname != null && !userNickname.isEmpty()) {
+                displayName = userNickname;
+            } else {
+                displayName = userName;
+            }
+            model.addAttribute("displayName", displayName);
+        }
+    }
 
     // Helper method: 로그인 상태 확인 및 userId 반환
     private String getUserId(HttpSession session) {
@@ -90,25 +116,12 @@ public class ProjectWebController {
 
             String projectName = projectService.getProjectNameById(projectId);
 
-            // ⭐️⭐️⭐️ 닉네임/이름 우선순위 로직 추가 ⭐️⭐️⭐️
-            String userName = (String) session.getAttribute("userName");
-            String userNickname = (String) session.getAttribute("userNickname");
-
-            String displayName;
-            if (userNickname != null && !userNickname.isEmpty()) {
-                displayName = userNickname; // 1순위: 닉네임
-            } else {
-                displayName = userName;     // 2순위: 이름
-            }
-
-            // ⭐️ Model에 displayName을 담아 View로 전달 ⭐️
-            model.addAttribute("displayName", displayName);
-
             // layout.html의 title 및 현재 프로젝트명 설정
             model.addAttribute("pageTitle", projectName);
             model.addAttribute("currentProjectName", projectName);
 
             session.setAttribute("currentProjectId", projectId);
+            model.addAttribute("currentProjectId", projectId);
 
             return "project/index";
         } catch (SecurityException e) {
@@ -144,5 +157,75 @@ public class ProjectWebController {
             redirectAttributes.addFlashAttribute("mypageError", "처리 중 알 수 없는 오류가 발생했습니다.");
             return "redirect:/user/mypage";
         }
+    }
+
+    @GetMapping("/projects/{projectId}/members")
+    public String projectMembersPage(@PathVariable Long projectId, HttpSession session, Model model) {
+        // (이 메서드는 기존 로직 그대로 유지)
+        try {
+            String userId = getUserId(session);
+            if (!projectService.checkUserAccessById(userId, projectId)) {
+                throw new SecurityException("접근 권한이 없습니다.");
+            }
+            List<User> members = projectService.getProjectMembers(projectId);
+            Project project = projectService.getProjectById(projectId);
+
+            model.addAttribute("members", members);
+            model.addAttribute("ownerPkId", project.getUsersId());
+            model.addAttribute("pageTitle", project.getProjectName());
+
+            return "project/members";
+
+        } catch (SecurityException | IllegalArgumentException e) {
+            return "redirect:/projects";
+        }
+    }
+
+    // ⭐️ [수정] 1. 팀원 조회 (Search) - 리다이렉트 제거 ⭐️
+    @PostMapping("/projects/search-member")
+    public String searchMember(@RequestParam Long projectId,
+                               @RequestParam String emailOrId,
+                               RedirectAttributes redirectAttributes) { // ⭐️ Model 대신 RedirectAttributes
+
+        // 1. 리다이렉트할 URL을 미리 정의
+        String redirectUrl = "redirect:/projects/" + projectId + "/members";
+
+        try {
+            // 2. 사용자 조회
+            User userToInvite = userService.findUserByEmailOrId(emailOrId);
+
+            // 3. 이미 멤버인지 확인
+            if (projectService.isUserInProject(userToInvite.getId(), projectId)) {
+                throw new IllegalArgumentException("이미 참여 중인 멤버입니다.");
+            }
+
+            // 4. [성공] 찾은 사용자 정보를 Flash Attribute에 담아 리다이렉트
+            redirectAttributes.addFlashAttribute("searchedUser", userToInvite);
+
+        } catch (IllegalArgumentException e) {
+            // 5. [실패] 에러 메시지를 Flash Attribute에 담아 리다이렉트
+            redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
+        }
+
+        // 6. ⭐️ 원래의 GET 페이지로 리다이렉트 ⭐️
+        return redirectUrl;
+    }
+
+    // ⭐️ [수정] 2. 팀원 초대 (Invite) - 리다이렉트 유지 ⭐️
+    // 초대(데이터 변경)는 리다이렉트(PRG) 패턴을 유지하는 것이 좋습니다.
+    @PostMapping("/projects/invite")
+    public String inviteMember(@RequestParam Long projectId,
+                               @RequestParam String userIdToInvite,
+                               RedirectAttributes redirectAttributes) { // ⭐️ 여긴 RedirectAttributes 유지
+
+        try {
+            projectService.inviteMember(projectId, userIdToInvite);
+            redirectAttributes.addFlashAttribute("inviteSuccess", "'" + userIdToInvite + "' 님을 성공적으로 초대했습니다.");
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
+        }
+
+        return "redirect:/projects/" + projectId + "/members";
     }
 }
