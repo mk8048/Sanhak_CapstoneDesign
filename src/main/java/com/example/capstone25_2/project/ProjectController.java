@@ -33,7 +33,7 @@ public class ProjectController {
             {
                 projectName: "비상구"
                 description: "산학 협력 캡스톤 디자인"
-                usersId: "이민기", "차지만", "최민식", "정휘수"
+                usersId: ""
             }
          */
 
