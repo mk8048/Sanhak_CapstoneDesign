@@ -81,20 +81,30 @@
 <hr style="margin: 30px auto; width: 400px;">
 
 <p align="center">
-    <a th:href="@{/index}">
+    <a th:href="@{'/projects/' + ${currentProjectId} + '/main'}">
         <button type="button" style="padding: 10px 20px;">메인 화면으로 돌아가기</button>
     </a>
 </p>
 
-<div th:with="
-        isError=${mypageError != null},
-        isSuccess=${mypageSuccess != null},
-        displayMessage=${isError ? mypageError : (isSuccess ? '정보가 성공적으로 수정되었습니다.' : null)}"
+<form th:action="@{/project/leave}" method="POST" align="center" style="margin-top: 10px;">
+    <input type="hidden" name="projectId" th:value="${currentProjectId}" />
+    <button type="submit"
+            onclick="return confirm('정말 이 프로젝트에서 탈퇴하시겠습니까?');">
+        프로젝트 탈퇴
+    </button>
+</form>
 
-     th:if="${displayMessage != null}"
+<form th:action="@{/user/delete}" method="POST" align="center" style="margin-top: 10px;">
+    <button type="submit"
+            onclick="return confirm('정말 회원 탈퇴를 하시겠습니까? 모든 정보가 삭제됩니다.');">
+        회원 탈퇴
+    </button>
+</form>
+
+<div th:if="${mypageError != null or mypageSuccess != null}"
      id="mypage-toast"
 
-     th:styleappend="${isError ?
+     th:styleappend="${mypageError != null ?
      'background-color: rgba(220, 53, 69, 0.9);' : 'background-color: rgba(40, 167, 69, 0.9);'}"
 
      style="
@@ -111,7 +121,7 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         font-weight: bold;
     ">
-    <span th:text="${displayMessage}">[메시지]</span>
+    <span th:text="${mypageError ?: '정보가 성공적으로 수정되었습니다.'}">[메시지]</span>
 </div>
 
 <script th:if="${mypageError != null or mypageSuccess != null}">
