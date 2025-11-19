@@ -38,7 +38,7 @@ public class Project {
     @Column(nullable = true)
     private Long usersId;
 
-    // ⭐️ 프로젝트 참여자 목록 (ElementCollection) ⭐️
+    // 프로젝트 참여자 목록 (ElementCollection)
     @ElementCollection
     @CollectionTable(name = "project_members", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "member_id")
