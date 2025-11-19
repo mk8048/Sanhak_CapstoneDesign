@@ -2,17 +2,19 @@ package com.example.capstone25_2.project.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import java.time.LocalDate;
+
 @SuppressWarnings({"LombokGetterMayBeUsed"})
 public class UpdateProjectRequest {
     private final String projectName;
     private final String description;
-    private final Long usersId;
+    private final LocalDate deadline;
 
     @JsonCreator
-    public UpdateProjectRequest(String projectName, String description, Long usersId) {
+    public UpdateProjectRequest(String projectName, String description, LocalDate deadline) {
         this.projectName = projectName;
         this.description = description;
-        this.usersId = usersId;
+        this.deadline = deadline;
     }
 
     //@getter 대신
@@ -22,7 +24,7 @@ public class UpdateProjectRequest {
     public String getDescription() {
         return description;
     }
-    public Long getUsersId() {
-        return usersId;
+    public LocalDate getDeadline() {
+        return deadline;
     }
 }

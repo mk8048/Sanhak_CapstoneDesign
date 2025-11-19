@@ -3,11 +3,12 @@ package com.example.capstone25_2.project;
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import jakarta.persistence.*;
-import lombok.Getter; // ⭐️ Lombok 적용
-import lombok.Setter; // ⭐️ Lombok 적용
-import lombok.NoArgsConstructor; // ⭐️ Lombok 적용
-import lombok.AccessLevel; // ⭐️ Lombok 적용
+import lombok.Getter; // Lombok 적용
+import lombok.Setter; // Lombok 적용
+import lombok.NoArgsConstructor; // Lombok 적용
+import lombok.AccessLevel; // Lombok 적용
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +18,6 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SuppressWarnings({"LombokGetterMayBeUsed"})
 public class Project {
 
     @Id
@@ -33,6 +33,9 @@ public class Project {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDate deadline;
 
     // 프로젝트 소유자 ID (Owner PK)
     @Column(nullable = true)
@@ -56,6 +59,7 @@ public class Project {
 
         project.setProjectName(request.getProjectName());
         project.setDescription(request.getDescription());
+        project.setDeadline(request.getDeadline());
 
         return project;
     }
@@ -64,7 +68,7 @@ public class Project {
     public void update(UpdateProjectRequest request) {
         this.setProjectName(request.getProjectName());
         this.setDescription(request.getDescription());
-        // usersId는 소유자이므로 이 메서드에서 변경하지 않는 것이 일반적입니다.
+        this.setDeadline(request.getDeadline());
     }
 
     public void removeMember(String userId) {

@@ -13,9 +13,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class Capstone252Application {
 
     public static void main(String[] args) {
-        // ⭐️ WebApplicationType을 명시적으로 설정
+        // WebApplicationType을 명시적으로 설정
         SpringApplication application = new SpringApplication(Capstone252Application.class);
-        application.setWebApplicationType(WebApplicationType.SERVLET); // ⭐️ SERVLET (웹)으로 설정
+        application.setWebApplicationType(WebApplicationType.SERVLET); // SERVLET (웹)으로 설정
         application.run(args);
     }
 }

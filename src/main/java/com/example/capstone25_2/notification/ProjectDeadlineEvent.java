@@ -1,4 +1,4 @@
-package com.example.capstone25_2.Notification;
+package com.example.capstone25_2.notification;
 
 import com.example.capstone25_2.project.Project;
 
@@ -12,7 +12,7 @@ public class ProjectDeadlineEvent {
         this.daysUntilDeadline = daysUntilDeadline;
     }
 
-    public Project getproject() {
+    public Project getProject() {
         return project;
     }
 

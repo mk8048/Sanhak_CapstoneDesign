@@ -1,7 +1,5 @@
 package com.example.capstone25_2.notification;
 
-import com.example.capstone25_2.memo.Memo;
-
 import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.project.ProjectService;
 import com.example.capstone25_2.user.User;
@@ -59,11 +57,14 @@ public class NotificationService {
     @Transactional
     public void handleProjectDeadlineEvent(ProjectDeadlineEvent event) {
 
-        Project project = event.getproject();
+        Project project = event.getProject();
+        int daysleft = event.getDaysUntilDeadline(); // 이벤트에서 남은 날짜 가져오기
 
         List<User> recipients = projectService.getProjectMembers(project.getProjectId());
 
-        String message = "프로젝트 '" + project.getProjectName() + "'의 마감 기한이 3일 남았습니다!";
+        // 동적 변경
+        String message = "프로젝트 '" + project.getProjectName() + "의 마감 기한이 " + daysleft + "일 남았습니다!";
+
         String url = "/projects/" + project.getProjectId();
 
         for (User recipient : recipients) {
