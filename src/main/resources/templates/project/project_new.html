@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <h1 align="center">캡스톤 매니저</h1>
+    <meta charset="UTF-8">
+    <title>새 프로젝트 생성</title>
+</head>
+<body>
+
+<form th:action="@{/project/create}" method="POST">
+    <table align="center">
+        <tr><td colspan="2" align="center" height="40"><b>새 프로젝트 생성</b></td></tr>
+
+        <tr>
+            <td align="right">프로젝트명&nbsp;</td>
+            <td><input type="text" name="projectName" required placeholder="프로젝트 이름 입력"/></td>
+        </tr>
+
+        <tr>
+            <td align="right">설명&nbsp;</td>
+            <td><input type="text" name="description" placeholder="간단한 설명"/></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center" height="50">
+                <input type="submit" value="프로젝트 생성"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<hr style="margin: 30px auto; width: 400px;">
+
+<p align="center">
+    <a th:href="@{/projects}">
+        <button type="button" style="padding: 10px 20px;">목록으로 돌아가기</button>
+    </a>
+</p>
+
+</body>
+</html>

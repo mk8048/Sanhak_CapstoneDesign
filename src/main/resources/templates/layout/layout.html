@@ -88,6 +88,10 @@
         .sidebar .nav-menu { list-style: none; }
         .sidebar .nav-menu li { padding: 15px 10px; border-radius: 8px; cursor: pointer; }
         .sidebar .nav-menu li:hover { background-color: #f1f3f5; }
+        .sidebar .nav-menu a {
+            text-decoration: none; /* 밑줄 제거 */
+            color: inherit; /* 부모(li)의 색상을 상속 (방문 시 보라색 방지) */
+        }
 
         /* --- 메인 콘텐츠 --- */
         .main-content {
@@ -140,7 +144,7 @@
 
     <div class="main-content">
         <header>
-            <div class="title">캡스톤디자인 I</div>
+            <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
             <div class="search-bar">
                 <input type="text" placeholder="검색">
                 <span class="search-icon">🔍</span>

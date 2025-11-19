@@ -101,8 +101,9 @@ public class UserService {
         return userOptional.get();
     }
 
+    // -- 프로필 수정 --
     @Transactional
-    public void updateUser(String userId, UserUpdateDto dto) {
+    public User updateUser(String userId, UserUpdateDto dto) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
@@ -119,16 +120,45 @@ public class UserService {
 
         String newPassword = dto.getNewPassword();
 
+
         if(newPassword != null && !newPassword.isEmpty()) {
+
+            if (newPassword.equals(user.getPassword())) {
+                throw new IllegalArgumentException("동일한 비밀번호로는 수정할 수 없습니다.");
+            }
 
             if(!newPassword.equals(dto.getNewPasswordConfirm())) {
                 throw new IllegalArgumentException("newPassword not match.");
             }
 
             user.setPassword(newPassword);
-
         }
+
+        return user;
     }
+
+    // -- 회원 탈퇴 --
+    @Transactional
+    public void deleteUser(String userId) {
+
+        // 1. 로그인 ID(String)를 사용하여 사용자 엔티티를 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("탈퇴할 사용자 정보를 찾을 수 없습니다."));
+
+        // 2. 엔티티 삭제
+        userRepository.delete(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User findUserByEmailOrId(String emailOrId) {
+        // 1. ID로 먼저 찾기
+        return userRepository.findById(emailOrId)
+                // 2. ID로 못 찾으면 Email로 찾기
+                .orElseGet(() -> userRepository.findByEmail(emailOrId)
+                        // 3. 둘 다 없으면 예외 발생
+                        .orElseThrow(() -> new IllegalArgumentException("'" + emailOrId + "' 사용자를 찾을 수 없습니다.")));
+    }
+
     /*
     @Transactional
     public void startFocusMode(Long pk_id) {
