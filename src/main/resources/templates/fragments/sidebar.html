@@ -23,10 +23,26 @@
         </li>
         <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
         <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
-        <li><span class="icon" style="margin-right: 15px;">📅</span> Schedule</li>
-        <li><span class="icon" style="margin-right: 15px;">📝</span> WorkList</li>
-        <li><span class="icon" style="margin-right: 15px;">📤</span> Outputs</li>
-        <li><span class="icon" style="margin-right: 15px;">❗</span> Issues</li>
+        <li>
+            <a th:href="@{'/tasks'}">
+                <span class="icon" style="margin-right: 15px;">📅</span> Tasks
+            </a>
+        </li>
+        <li>
+            <a th:href="@{'/github/commits/api'}">
+                <span class="icon" style="margin-right: 15px;">📝</span> Github Commit
+            </a>
+        </li>
+        <li>
+            <a th:href="@{'/github/commits/chart'}">
+                <span class="icon" style="margin-right: 15px;">📤</span> Github Chart
+            </a>
+        </li>
+        <li>
+            <a th:href="@{'/github/commits/recommend'}">
+                <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
+            </a>
+        </li>
         <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
         <li><span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart</li>
         <li>
