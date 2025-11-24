@@ -2,11 +2,15 @@ package com.example.capstone25_2.notification;
 
 import com.example.capstone25_2.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "Notification")
-@SuppressWarnings({"LombokGetterMayBeUsed"})
 public class Notification {
 
     @Id
@@ -30,11 +34,11 @@ public class Notification {
     private String relatedUrl; //클릭 시 이동 url (ex: "/api/memo/{id}")
 
     @Column(updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() {
-        this.createAt = LocalDateTime.now();
+    protected void onCreadte() {
+        this.createdAt = LocalDateTime.now();
     }
 
     protected Notification() {}
@@ -56,25 +60,5 @@ public class Notification {
         MEMO_UPDATED,
         PROJECT_DEADLINE_IMMINENT, // 프로젝트 마감 임박
         FOCUS_MODE_STARTED // 집중 모드 시작
-    }
-
-    //getter 대신
-    public Long getId() {
-        return id;
-    }
-    public User getRecipient() {
-        return recipient;
-    }
-    public String getMessage() {
-        return message;
-    }
-    public boolean getIsRead() {
-        return isRead;
-    }
-    public String getRelatedUrl() {
-        return relatedUrl;
-    }
-    public LocalDateTime getCreateAt() {
-        return createAt;
     }
 }
