@@ -298,7 +298,7 @@
 
                             <div class="notification-item"
                                  th:each="noti : ${globalNotifications}"
-                                 th:onclick="|location.href='@{${noti.url}}'|"
+                                 <th:onclick="|location.href='@{${noti.relatedUrl}}'|"
                                  style="cursor: pointer;">
 
                                 <div th:text="${noti.message}">새로운 알림입니다.</div>

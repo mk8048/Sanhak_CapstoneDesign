@@ -34,7 +34,7 @@ public class Project {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = true, updatable = false)
     private LocalDate deadline;
 
     // 프로젝트 소유자 ID (Owner PK)
