@@ -25,5 +25,3 @@ public class ChatMessage {
         this.writer = writer;
     }
 }
-
-
