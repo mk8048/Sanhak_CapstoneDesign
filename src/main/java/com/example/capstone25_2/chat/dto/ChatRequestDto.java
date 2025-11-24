@@ -7,5 +7,6 @@ public class ChatRequestDto {
 
     private String content;
     private String writer;
+    private String profileImageUrl;
 
 }

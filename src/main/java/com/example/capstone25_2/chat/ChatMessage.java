@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -20,8 +22,14 @@ public class ChatMessage {
 
     private String writer;
 
-    public ChatMessage(String content, String writer) {
+    private String profileImageUrl;
+
+    private LocalDateTime createdAt;
+
+    public ChatMessage(String content, String writer, String profileImageUrl) {
         this.content = content;
         this.writer = writer;
+        this.profileImageUrl = profileImageUrl;
+        this.createdAt = LocalDateTime.now();
     }
 }
