@@ -1,6 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
+<head>
+    <style>
+        .submenu {
+            display: none;
+            padding-left: 35px;
+        }
+
+        .submenu.active {
+            display: block;
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .menu-toggle .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 5px;
+        }
+
+        .menu-toggle.expanded .arrow {
+            transform: rotate(90deg);
+        }
+
+        .submenu li {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+
+        .submenu li a {
+            color: #555;
+            text-decoration: none;
+        }
+
+        .submenu li a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+
 <body>
     <!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
     <nav class="sidebar" th:fragment="sidebarFragment">
@@ -46,6 +88,45 @@
                 </a>
             </li>
             <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
+
+            <!-- 산출물 with expandable submenu -->
+            <li class="menu-toggle" onclick="toggleSubmenu(this)">
+                <span class="arrow">▶</span>
+                <span class="icon" style="margin-right: 15px;">📦</span> 산출물
+            </li>
+            <ul class="submenu">
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=all'}">
+                        <span class="icon" style="margin-right: 10px;">🏠</span> Home
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=project'}">
+                        <span class="icon" style="margin-right: 10px;">🚪</span> Project Room
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=outputs'}">
+                        <span class="icon" style="margin-right: 10px;">📦</span> Outputs
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=gantt'}">
+                        <span class="icon" style="margin-right: 10px;">📊</span> Gantt Chart
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=meeting'}">
+                        <span class="icon" style="margin-right: 10px;">📋</span> 회의록
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=memo'}">
+                        <span class="icon" style="margin-right: 10px;">📝</span> 메모 대시보드
+                    </a>
+                </li>
+            </ul>
+
             <li>
                 <a th:href="@{'/template/test'}">
                     <span class="icon" style="margin-right: 15px;">📄</span> 양식 제공
@@ -69,6 +150,14 @@
             <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
         </ul>
     </nav>
+
+    <script>
+        function toggleSubmenu(element) {
+            element.classList.toggle('expanded');
+            const submenu = element.nextElementSibling;
+            submenu.classList.toggle('active');
+        }
+    </script>
 </body>
 
 </html>
