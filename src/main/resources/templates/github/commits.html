@@ -2,64 +2,180 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8"/>
-    <title>깃허브 커밋</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanhak Project - GitHub Commits</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: Arial, sans-serif; margin: 24px; }
-        .toolbar { margin-bottom: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .commit { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .meta { font-size: 12px; color: #666; }
-        .msg { white-space: pre-wrap; font-weight: 600; margin: 6px 0; }
-        .avatar { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        h2 {
+            font-size: 24px; font-weight: 700; margin-bottom: 20px;
+            color: #111827; display: flex; align-items: center; gap: 10px;
+        }
+
+        /* 검색 패널 */
+        .search-panel {
+            background: var(--card-bg); padding: 20px; border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+
+        input[type="text"], input[type="number"] {
+            padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 14px; outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 9px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;
+            font-size: 14px; height: 38px;
+        }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* 커밋 리스트 */
+        .commit-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .commit-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .commit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .msg {
+            font-size: 16px; font-weight: 600; color: #1f2937;
+            line-height: 1.5; margin: 0; word-break: break-word;
+        }
+
+        .meta {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 13px; color: var(--text-sub); margin-top: 8px;
+        }
+
+        .author-badge {
+            background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px;
+            border-radius: 9999px; font-weight: 600; font-size: 12px;
+        }
+
+        .commit-hash {
+            font-family: 'Monaco', monospace; background-color: #f1f5f9;
+            padding: 2px 6px; border-radius: 4px; color: #475569;
+            font-size: 12px; text-decoration: none; border: 1px solid #e2e8f0;
+        }
+
+        .pagination {
+            margin-top: 24px; display: flex; justify-content: center;
+            align-items: center; gap: 16px; font-weight: 600;
+        }
+        .empty-state { text-align: center; padding: 40px; color: var(--text-sub); }
     </style>
 </head>
 <body>
-<h2>GitHub Commits</h2>
 
-<form class="toolbar" method="get" th:action="@{/github/commits}">
-    <input type="text" name="owner" placeholder="owner" th:value="${owner}" />
-    <input type="text" name="repo" placeholder="repo" th:value="${repo}" />
-    <input type="text" name="branch" placeholder="branch" th:value="${branch}" />
-    <label>perPage <input type="number" name="perPage" min="1" max="100" th:value="${perPage}" /></label>
-    <label>page <input type="number" name="page" min="1" th:value="${page}" /></label>
-    <button type="submit">검색</button>
-</form>
+<div class="container">
+    <h2>
+        <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true"><path fill="#24292f" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        Commits History
+    </h2>
 
-<div th:if="${#lists.isEmpty(commits)}">커밋이 없습니다.</div>
+    <form class="search-panel" method="get" th:action="@{/github/commits}">
+        <div class="input-group">
+            <label>Owner</label>
+            <input type="text" name="owner" placeholder="e.g. mk8048" th:value="${owner}" />
+        </div>
+        <div class="input-group">
+            <label>Repo</label>
+            <input type="text" name="repo" placeholder="e.g. Sanhak" th:value="${repo}" />
+        </div>
+        <div class="input-group">
+            <label>Branch</label>
+            <input type="text" name="branch" placeholder="dev" th:value="${branch}" />
+        </div>
+        <div class="input-group">
+            <label>Show</label>
+            <input type="number" name="perPage" min="1" max="100" th:value="${perPage}" style="width: 60px;" />
+        </div>
+        <input type="hidden" name="page" value="1" />
+        <button type="submit">🔍 조회하기</button>
+    </form>
 
-<div th:each="c : ${commits}" class="commit">
-    <div class="msg" th:text="${c.commit().message()}">message</div>
-    <div class="meta">
-    <span th:if="${c.author() != null}">
-      <img th:src="${c.author().avatar_url()}" class="avatar" alt="avatar"/>
-      <a th:href="${c.author().html_url()}" th:text="${c.author().login()}">author</a>
-      •
-    </span>
-        <span th:text="${#temporals.format(c.commit().author().date().atZoneSameInstant(koreaTZ), 'yyyy-MM-dd HH:mm')}">2025-10-28 11:00</span>
-        • <a th:href="${c.html_url()}" target="_blank" th:text="${#strings.substring(c.sha,0,7)}">abcdef0</a>
+    <div th:if="${#lists.isEmpty(commits)}" class="empty-state">
+        조건에 맞는 커밋 기록이 없습니다.
+    </div>
+
+    <div class="commit-list">
+        <div th:each="c : ${commits}" class="commit-card">
+            <div class="msg" th:text="${c.message}">Commit Message</div>
+
+            <div class="meta">
+                <span class="author-badge" th:text="${c.authorName}">User</span>
+
+                <span style="color: #e5e7eb;">|</span>
+
+                <span th:text="${#strings.substring(c.date, 0, 10) + ' ' + #strings.substring(c.date, 11, 16)}">
+                    2025-11-24 10:56
+                </span>
+
+                <span style="color: #e5e7eb;">|</span>
+
+                <a th:href="${c.html_url}" target="_blank" class="commit-hash" title="GitHub에서 보기">
+                    <span th:text="${#strings.substring(c.sha,0,7)}">a1b2c3d</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+        <form method="get" th:action="@{/github/commits}">
+            <input type="hidden" name="owner" th:value="${owner}"/>
+            <input type="hidden" name="repo" th:value="${repo}"/>
+            <input type="hidden" name="branch" th:value="${branch}"/>
+            <input type="hidden" name="perPage" th:value="${perPage}"/>
+            <input type="hidden" name="page" th:value="${page - 1}"/>
+            <button type="submit" th:disabled="${page <= 1}">← 이전</button>
+        </form>
+
+        <span class="page-indicator" th:text="'Page ' + ${page}">Page 1</span>
+
+        <form method="get" th:action="@{/github/commits}">
+            <input type="hidden" name="owner" th:value="${owner}"/>
+            <input type="hidden" name="repo" th:value="${repo}"/>
+            <input type="hidden" name="branch" th:value="${branch}"/>
+            <input type="hidden" name="perPage" th:value="${perPage}"/>
+            <input type="hidden" name="page" th:value="${page + 1}"/>
+            <button type="submit">다음 →</button>
+        </form>
     </div>
 </div>
 
-<div class="toolbar">
-    <form method="get" th:action="@{/github/commits}">
-        <input type="hidden" name="owner" th:value="${owner}"/>
-        <input type="hidden" name="repo" th:value="${repo}"/>
-        <input type="hidden" name="branch" th:value="${branch}"/>
-        <input type="hidden" name="perPage" th:value="${perPage}"/>
-        <input type="hidden" name="page" th:value="${page - 1}"/>
-        <button type="submit" th:disabled="${page <= 1}">이전</button>
-    </form>
-
-    <span th:text="'Page ' + ${page}"></span>
-
-    <form method="get" th:action="@{/github/commits}">
-        <input type="hidden" name="owner" th:value="${owner}"/>
-        <input type="hidden" name="repo" th:value="${repo}"/>
-        <input type="hidden" name="branch" th:value="${branch}"/>
-        <input type="hidden" name="perPage" th:value="${perPage}"/>
-        <input type="hidden" name="page" th:value="${page + 1}"/>
-        <button type="submit">다음</button>
-    </form>
-</div>
 </body>
 </html>

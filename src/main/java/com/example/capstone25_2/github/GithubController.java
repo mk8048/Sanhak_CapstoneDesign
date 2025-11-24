@@ -46,7 +46,7 @@ public class GithubController {
         model.addAttribute("perPage", perPage);
         model.addAttribute("page", page);
         model.addAttribute("koreaTZ", ZoneId.of("Asia/Seoul"));
-        return "commits";
+        return "github/commits";
     }
 
     // JSON API
