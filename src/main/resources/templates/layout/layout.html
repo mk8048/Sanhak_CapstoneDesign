@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
 <head>
     <meta charset="UTF-8">
     <title>캡스톤 매니저</title>
     <style>
         /* 기본 스타일 초기화 */
-        body, h1, ul, p, input {
+        body,
+        h1,
+        ul,
+        p,
+        input {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -34,7 +38,7 @@
             flex-shrink: 0;
         }
 
-        /* ⭐️ 추가된 프로필 영역 컨테이너 스타일 ⭐️ */
+        /* 추가된 프로필 영역 컨테이너 스타일 */
         .profile-area {
             padding: 15px;
             margin-bottom: 20px;
@@ -50,7 +54,7 @@
             font-size: 1.1em;
         }
 
-        /* ⭐️ 액션 버튼 컨테이너 (마이페이지/로그아웃) ⭐️ */
+        /*액션 버튼 컨테이너 (마이페이지/로그아웃) */
         .profile-actions {
             display: flex;
             justify-content: space-between;
@@ -85,12 +89,25 @@
         }
 
         /* --- 기존 사이드바 메뉴 스타일 유지 --- */
-        .sidebar .nav-menu { list-style: none; }
-        .sidebar .nav-menu li { padding: 15px 10px; border-radius: 8px; cursor: pointer; }
-        .sidebar .nav-menu li:hover { background-color: #f1f3f5; }
+        .sidebar .nav-menu {
+            list-style: none;
+        }
+
+        .sidebar .nav-menu li {
+            padding: 15px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .sidebar .nav-menu li:hover {
+            background-color: #f1f3f5;
+        }
+
         .sidebar .nav-menu a {
-            text-decoration: none; /* 밑줄 제거 */
-            color: inherit; /* 부모(li)의 색상을 상속 (방문 시 보라색 방지) */
+            text-decoration: none;
+            /* 밑줄 제거 */
+            color: inherit;
+            /* 부모(li)의 색상을 상속 (방문 시 보라색 방지) */
         }
 
         /* --- 메인 콘텐츠 --- */
@@ -111,23 +128,33 @@
             position: relative;
             height: 80px;
         }
+
         header .title {
             font-size: 2em;
             font-weight: bold;
         }
+
         header .search-bar {
             width: 40%;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
         }
+
         header .search-bar input {
-            width: 100%; padding: 12px 20px; border: 1px solid #ccc;
-            border-radius: 20px; font-size: 1em;
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 1em;
         }
+
         header .search-bar .search-icon {
-            position: absolute; right: 15px; top: 50%;
-            transform: translateY(-50%); color: #888;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
         }
 
         /* --- 실제 페이지 콘텐츠가 들어갈 영역 --- */
@@ -136,25 +163,181 @@
             flex-grow: 1;
             background-color: #f8f9fa;
         }
+
+        /* --- 알림 아이콘 및 드롭다운 스타일 --- */
+        .notification-container {
+            margin-left: auto;
+            /* 헤더 우측으로 정렬 */
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-icon {
+            font-size: 1.5em;
+            cursor: pointer;
+            position: relative;
+            padding: 5px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 5px;
+            font-size: 0.6em;
+            font-weight: bold;
+            display: none;
+            /* 알림이 있을 때만 표시 (JS로 제어 가능) */
+        }
+
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            top: 50px;
+            /* 아이콘 아래 위치 */
+            right: 0;
+            width: 320px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .notification-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item:hover {
+            background-color: #f1f3f5;
+        }
+
+        .notification-item .time {
+            display: block;
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .notification-empty {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+        }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+    <div class="container">
+        <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
 
-    <div class="main-content">
-        <header>
-            <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
-            <div class="search-bar">
-                <input type="text" placeholder="검색">
-                <span class="search-icon">🔍</span>
-            </div>
-        </header>
+        <div class="main-content">
+            <header>
+                <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
+                <div class="search-bar">
+                    <input type="text" placeholder="검색">
+                    <span class="search-icon">🔍</span>
+                </div>
 
-        <main class="page-content" layout:fragment="content">
-            <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
-        </main>
+                <!-- 알림 아이콘 및 드롭다운 -->
+                <div class="notification-container">
+                    <div class="notification-icon" onclick="toggleNotification()">
+                        🔔
+                        <span class="notification-badge"
+                              id="notificationBadge"
+                              th:if="${unreadCount != null and unreadCount > 0}"
+                              th:text="${unreadCount}"
+                              style="display: inline-block;">
+                        </span>
+                    </div>
+
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-header">
+                            알림
+                            <span style="font-size: 0.8em; color: #007bff; cursor: pointer;">모두 읽음</span>
+                        </div>
+
+                        <div class="notification-list">
+                            <div class="notification-empty" th:if="${#lists.isEmpty(globalNotifications)}">
+                                새로운 알림이 없습니다.
+                            </div>
+
+                            <div class="notification-item"
+                                 th:each="noti : ${globalNotifications}"
+                                 th:onclick="|location.href='@{${noti.url}}'|"
+                                 style="cursor: pointer;">
+
+                                <div th:text="${noti.message}">새로운 알림입니다.</div>
+
+                                <span class="time"
+                                      th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">
+                                    2025-11-20 12:00
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content" layout:fragment="content">
+                <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
+            </main>
+        </div>
     </div>
-</div>
+
+    <script>
+        function toggleNotification() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // 화면의 다른 곳을 클릭하면 드롭다운 닫기
+        window.onclick = function (event) {
+            if (!event.target.closest('.notification-container')) {
+                var dropdowns = document.getElementsByClassName("notification-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('active')) {
+                        openDropdown.classList.remove('active');
+                    }
+                }
+            }
+        }
+    </script>
 </body>
+
 </html>
