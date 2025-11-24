@@ -12,9 +12,9 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
 
-    public void recordChat(ChatRequestDto requestDto) {
+    public ChatMessage recordChat(ChatRequestDto requestDto) {
         ChatMessage message = new ChatMessage(requestDto.getContent(), requestDto.getWriter());
-        chatRepository.save(message);
+        return chatRepository.save(message);
     }
 
     public List<ChatMessage> getAllChats() {

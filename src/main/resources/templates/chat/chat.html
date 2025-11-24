@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>캡스톤 채팅방</title>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
+        .chat-container { max-width: 500px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .chat-header { background: #4a90e2; color: white; padding: 15px; text-align: center; font-weight: bold; }
+
+        /* 채팅 내역 영역 */
+        #messageArea { height: 400px; overflow-y: scroll; padding: 20px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
+
+        /* 메시지 스타일 */
+        .message-box { padding: 10px 15px; border-radius: 10px; max-width: 70%; font-size: 14px; }
+        .my-msg { background-color: #ffe082; align-self: flex-end; } /* 내가 쓴 글 */
+        .other-msg { background-color: #e0e0e0; align-self: flex-start; } /* 남이 쓴 글 */
+        .writer-name { font-size: 11px; color: #555; margin-bottom: 4px; display: block; }
+
+        /* 입력 영역 */
+        .input-area { padding: 15px; display: flex; gap: 10px; background: #fff; }
+        input[type="text"] { padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        #writer { width: 80px; text-align: center; }
+        #content { flex-grow: 1; }
+        button { padding: 10px 20px; background: #4a90e2; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #357abd; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">🔥 실시간 채팅방 🔥</div>
+
+    <div id="messageArea"></div>
+
+    <div class="input-area">
+        <input type="text" id="writer" placeholder="닉네임" />
+        <input type="text" id="content" placeholder="내용을 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()" />
+        <button onclick="sendMessage()">전송</button>
+    </div>
+</div>
+
+<script>
+    var stompClient = null;
+    var currentWriter = ""; // 현재 내 닉네임 저장용
+
+    // 1. 페이지 열리면 바로 소켓 연결
+    function connect() {
+        var socket = new SockJS('/ws-chat');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // 구독 설정: 메시지가 오면 showMessage 실행
+            stompClient.subscribe('/topic/public', function (messageOutput) {
+                showMessage(JSON.parse(messageOutput.body));
+            });
+        });
+    }
+
+    // 2. 메시지 전송 기능 (HTML -> Controller -> DB -> Socket)
+    function sendMessage() {
+        var writerInput = document.getElementById('writer');
+        var contentInput = document.getElementById('content');
+
+        var writer = writerInput.value.trim();
+        var content = contentInput.value.trim();
+
+        if (!writer || !content) {
+            alert("닉네임과 내용을 모두 입력해주세요!");
+            return;
+        }
+
+        currentWriter = writer; // 내 닉네임 기억 (화면 표시용)
+
+        // API로 전송 (Postman이 하던 일을 자바스크립트가 대신 함)
+        fetch('/api/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                writer: writer,
+                content: content
+            })
+        }).then(() => {
+            contentInput.value = ''; // 전송 후 입력창 비우기
+            contentInput.focus();
+        });
+    }
+
+    // 3. 화면에 메시지 그리기
+    function showMessage(message) {
+        var messageArea = document.getElementById('messageArea');
+
+        var msgDiv = document.createElement('div');
+        msgDiv.classList.add('message-box');
+
+        // 내가 쓴 건 오른쪽(노란색), 남이 쓴 건 왼쪽(회색)
+        if (message.writer === currentWriter) {
+            msgDiv.classList.add('my-msg');
+        } else {
+            msgDiv.classList.add('other-msg');
+        }
+
+        var nameSpan = document.createElement('span');
+        nameSpan.classList.add('writer-name');
+        nameSpan.innerText = message.writer;
+
+        var contentSpan = document.createElement('span');
+        contentSpan.innerText = message.content;
+
+        msgDiv.appendChild(nameSpan);
+        msgDiv.appendChild(contentSpan);
+        messageArea.appendChild(msgDiv);
+
+        // 스크롤 맨 아래로
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+
+    // 시작하자마자 연결
+    connect();
+</script>
+
+</body>
+</html>
