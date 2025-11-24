@@ -1,57 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-<!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
-<nav class="sidebar" th:fragment="sidebarFragment">
-    <div class="profile-area">
-        <div class="profile-info" style="font-weight: bold; font-size: 1.1em;">
-            <span class="icon">👤</span> <span th:text="${displayName}"></span>
-        </div>
-        <div class="profile-actions">
-            <a th:href="@{/user/mypage}" class="action-link">마이 페이지</a>
 
-            <form th:action="@{/user/logout}" method="POST" class="logout-form">
-                <button type="submit" class="logout-btn">로그아웃</button>
-            </form>
+<body>
+    <!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
+    <nav class="sidebar" th:fragment="sidebarFragment">
+        <div class="profile-area">
+            <div class="profile-info" style="font-weight: bold; font-size: 1.1em;">
+                <span class="icon">👤</span> <span th:text="${displayName}"></span>
+            </div>
+            <div class="profile-actions">
+                <a th:href="@{/user/mypage}" class="action-link">마이 페이지</a>
+
+                <form th:action="@{/user/logout}" method="POST" class="logout-form">
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+            </div>
         </div>
-    </div>
-    <ul class="nav-menu">
-        <li class="active">
-            <a th:href="${currentProjectId != null} ? @{/projects/{id}/main(id=${currentProjectId})} : @{/projects}">
-                <span class="icon" style="margin-right: 15px;">🏠</span> Home
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
-        <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
-        <li>
-            <a th:href="@{'/tasks'}">
-                <span class="icon" style="margin-right: 15px;">📅</span> Tasks
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits'}">
-                <span class="icon" style="margin-right: 15px;">📝</span> Github Commit
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits/chart'}">
-                <span class="icon" style="margin-right: 15px;">📤</span> Github Chart
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits/recommend'}">
-                <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
-        <li><span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart</li>
-        <li>
-            <a th:href="@{'/projects/' + ${currentProjectId} + '/members'}">
-                <span class="icon" style="margin-right: 15px;">👥</span> Members
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
-    </ul>
-</nav>
+        <ul class="nav-menu">
+            <li class="active">
+                <a
+                    th:href="${currentProjectId != null} ? @{/projects/{id}/main(id=${currentProjectId})} : @{/projects}">
+                    <span class="icon" style="margin-right: 15px;">🏠</span> Home
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
+            <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
+            <li>
+                <a th:href="@{'/tasks'}">
+                    <span class="icon" style="margin-right: 15px;">📅</span> Tasks
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits'}">
+                    <span class="icon" style="margin-right: 15px;">📝</span> Github Commit
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits/chart'}">
+                    <span class="icon" style="margin-right: 15px;">📤</span> Github Chart
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits/recommend'}">
+                    <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
+            <li>
+                <a th:href="@{'/gantt/test'}">
+                    <span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/projects/' + ${currentProjectId} + '/members'}">
+                    <span class="icon" style="margin-right: 15px;">👥</span> Members
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
+        </ul>
+    </nav>
 </body>
+
 </html>
