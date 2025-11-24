@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>회의록 관리</title>
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px 30px;
+            margin-bottom: 40px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #create-result,
+        #meeting-list-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        .success {
+            background-color: #e8f8f5;
+            color: #1e8449;
+            border: 1px solid #1e8449;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        .meeting-item {
+            background-color: #f0f3f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .meeting-item h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .meeting-item .meta {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .meeting-item .content {
+            color: #34495e;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .meeting-item .summary {
+            background-color: #e8f4f8;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #ddd;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📋 회의록 관리</h1>
+
+    <div class="card">
+        <h2>📝 새 회의록 작성</h2>
+        <form id="meeting-form">
+            <div class="form-group">
+                <label for="title">회의 제목 *</label>
+                <input type="text" id="title" placeholder="예: 주간 회의" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">회의 내용 *</label>
+                <textarea id="content" placeholder="회의에서 논의된 내용을 작성하세요" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="summary">요약</label>
+                <textarea id="summary" placeholder="회의 요약 (선택사항)"></textarea>
+            </div>
+
+            <button type="submit">회의록 등록</button>
+            <div id="create-result"></div>
+        </form>
+    </div>
+
+    <hr>
+
+    <div class="card">
+        <h2>📚 등록된 회의록 목록</h2>
+        <div id="meeting-list-result"></div>
+    </div>
+
+    <script>
+        const createResultDiv = document.getElementById("create-result");
+        const meetingListDiv = document.getElementById("meeting-list-result");
+        const meetingForm = document.getElementById("meeting-form");
+
+        // Auto-load meeting list on page load
+        function loadMeetingList() {
+            meetingListDiv.innerHTML = "⏳ 회의록을 불러오는 중...";
+
+            fetch('/api/meetings')
+                .then(response => response.json())
+                .then(meetings => {
+                    console.log("서버에서 받은 데이터:", meetings);
+
+                    if (meetings.length === 0) {
+                        meetingListDiv.className = "error";
+                        meetingListDiv.textContent = "📭 등록된 회의록이 없습니다.";
+                        return;
+                    }
+
+                    meetingListDiv.className = "success";
+                    meetingListDiv.innerHTML = "";
+
+                    meetings.forEach(meeting => {
+                        const meetingElement = document.createElement("div");
+                        meetingElement.className = "meeting-item";
+
+                        const dateStr = meeting.createdDate || "날짜 미정";
+
+                        meetingElement.innerHTML = `
+              <h3>${meeting.title}</h3>
+              <div class="meta">📅 작성일: ${dateStr} | ID: ${meeting.id}</div>
+              <div class="content">${meeting.content}</div>
+              ${meeting.summary ? `<div class="summary">💡 요약: ${meeting.summary}</div>` : ''}
+            `;
+                        meetingListDiv.appendChild(meetingElement);
+                    });
+                })
+                .catch(error => {
+                    console.error("API 호출 중 오류 발생:", error);
+                    meetingListDiv.className = "error";
+                    meetingListDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+                });
+        }
+
+        // Load meetings when page loads
+        window.addEventListener('DOMContentLoaded', loadMeetingList);
+
+        // Handle form submission
+        meetingForm.onsubmit = function (e) {
+            e.preventDefault();
+
+            const meetingData = {
+                title: document.getElementById('title').value.trim(),
+                content: document.getElementById('content').value.trim(),
+                summary: document.getElementById('summary').value.trim()
+            };
+
+            if (!meetingData.title || !meetingData.content) {
+                createResultDiv.className = "error";
+                createResultDiv.textContent = "❌ 제목과 내용은 필수 입력 항목입니다.";
+                return;
+            }
+
+            fetch("/api/meetings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(meetingData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log("회의록 등록 성공");
+                        createResultDiv.className = "success";
+                        createResultDiv.textContent = "✅ 회의록이 성공적으로 등록되었습니다.";
+
+                        // Reset form
+                        meetingForm.reset();
+
+                        // Reload meeting list after creating new meeting
+                        setTimeout(loadMeetingList, 500);
+                    } else {
+                        console.error("회의록 등록 실패");
+                        createResultDiv.className = "error";
+                        createResultDiv.textContent = "❌ 회의록 등록에 실패했습니다. (F12 콘솔 확인)";
+                    }
+                })
+                .catch(error => {
+                    console.error("API 호출 중 오류 발생:", error);
+                    createResultDiv.className = "error";
+                    createResultDiv.textContent = "❌ API 호출 오류. (F12 콘솔 확인)";
+                });
+        };
+    </script>
+
+</body>
+
+</html>
