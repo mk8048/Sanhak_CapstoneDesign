@@ -22,10 +22,8 @@
             --border-color: #e5e7eb;
         }
 
-        /* body 스타일 제거 후 .commits-page로 이동 */
         .commits-page {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            /* background-color는 layout에서 관리하므로 제외하거나 필요 시 오버라이드 */
             color: var(--text-main);
             margin: 0;
             padding: 40px 20px;
@@ -34,24 +32,8 @@
         .commits-container { max-width: 800px; margin: 0 auto; }
 
         h2 {
-            font-size: 24px; font-weight: 700; margin-bottom: 20px;
+            font-size: 24px; font-weight: 700; margin-bottom: 24px;
             color: #111827; display: flex; align-items: center; gap: 10px;
-        }
-
-        /* 검색 패널 */
-        .search-panel {
-            background: var(--card-bg); padding: 20px; border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
-            border: 1px solid var(--border-color);
-        }
-
-        .input-group { display: flex; flex-direction: column; gap: 4px; }
-        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
-
-        input[type="text"], input[type="number"] {
-            padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;
-            font-size: 14px; outline: none;
         }
 
         button {
@@ -111,27 +93,6 @@
             <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true"><path fill="#24292f" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
             Commits History
         </h2>
-
-        <form class="search-panel" method="get" th:action="@{/github/commits}">
-            <div class="input-group">
-                <label>Owner</label>
-                <input type="text" name="owner" placeholder="e.g. mk8048" th:value="${owner}" />
-            </div>
-            <div class="input-group">
-                <label>Repo</label>
-                <input type="text" name="repo" placeholder="e.g. Sanhak_CapstoneDesign" th:value="${repo}" />
-            </div>
-            <div class="input-group">
-                <label>Branch</label>
-                <input type="text" name="branch" placeholder="dev" th:value="${branch}" />
-            </div>
-            <div class="input-group">
-                <label>Show</label>
-                <input type="number" name="perPage" min="1" max="100" th:value="${perPage}" style="width: 60px;" />
-            </div>
-            <input type="hidden" name="page" value="1" />
-            <button type="submit">🔍 조회하기</button>
-        </form>
 
         <div th:if="${#lists.isEmpty(commits)}" class="empty-state">
             조건에 맞는 커밋 기록이 없습니다.
