@@ -22,10 +22,8 @@
             --border-color: #e5e7eb;
         }
 
-        /* body 스타일 제거 후 .commits-page로 이동 */
         .commits-page {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            /* background-color는 layout에서 관리하므로 제외하거나 필요 시 오버라이드 */
             color: var(--text-main);
             margin: 0;
             padding: 40px 20px;
@@ -34,24 +32,8 @@
         .commits-container { max-width: 800px; margin: 0 auto; }
 
         h2 {
-            font-size: 24px; font-weight: 700; margin-bottom: 20px;
+            font-size: 24px; font-weight: 700; margin-bottom: 24px;
             color: #111827; display: flex; align-items: center; gap: 10px;
-        }
-
-        /* 검색 패널 */
-        .search-panel {
-            background: var(--card-bg); padding: 20px; border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
-            border: 1px solid var(--border-color);
-        }
-
-        .input-group { display: flex; flex-direction: column; gap: 4px; }
-        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
-
-        input[type="text"], input[type="number"] {
-            padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;
-            font-size: 14px; outline: none;
         }
 
         button {
@@ -64,15 +46,23 @@
         /* 커밋 리스트 */
         .commit-list { display: flex; flex-direction: column; gap: 12px; }
 
+        /* a 태그로 바뀌었으므로 밑줄 제거 및 텍스트 색상 상속 설정 */
         .commit-card {
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 8px; padding: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex; flex-direction: column; gap: 8px;
+
+            /* 링크 스타일 초기화 */
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
+
         .commit-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color); /* 호버 시 테두리 색상 강조 */
         }
 
         .msg {
@@ -93,7 +83,7 @@
         .commit-hash {
             font-family: 'Monaco', monospace; background-color: #f1f5f9;
             padding: 2px 6px; border-radius: 4px; color: #475569;
-            font-size: 12px; text-decoration: none; border: 1px solid #e2e8f0;
+            font-size: 12px; border: 1px solid #e2e8f0;
         }
 
         .pagination {
@@ -112,33 +102,16 @@
             Commits History
         </h2>
 
-        <form class="search-panel" method="get" th:action="@{/github/commits}">
-            <div class="input-group">
-                <label>Owner</label>
-                <input type="text" name="owner" placeholder="e.g. mk8048" th:value="${owner}" />
-            </div>
-            <div class="input-group">
-                <label>Repo</label>
-                <input type="text" name="repo" placeholder="e.g. Sanhak_CapstoneDesign" th:value="${repo}" />
-            </div>
-            <div class="input-group">
-                <label>Branch</label>
-                <input type="text" name="branch" placeholder="dev" th:value="${branch}" />
-            </div>
-            <div class="input-group">
-                <label>Show</label>
-                <input type="number" name="perPage" min="1" max="100" th:value="${perPage}" style="width: 60px;" />
-            </div>
-            <input type="hidden" name="page" value="1" />
-            <button type="submit">🔍 조회하기</button>
-        </form>
-
         <div th:if="${#lists.isEmpty(commits)}" class="empty-state">
             조건에 맞는 커밋 기록이 없습니다.
         </div>
 
         <div class="commit-list">
-            <div th:each="c : ${commits}" class="commit-card">
+            <a th:each="c : ${commits}"
+               th:href="${c.html_url}"
+               target="_blank"
+               class="commit-card">
+
                 <div class="msg" th:text="${c.message}">Commit Message</div>
 
                 <div class="meta">
@@ -152,11 +125,9 @@
 
                     <span style="color: #e5e7eb;">|</span>
 
-                    <a th:href="${c.html_url}" target="_blank" class="commit-hash" title="GitHub에서 보기">
-                        <span th:text="${#strings.substring(c.sha,0,7)}">a1b2c3d</span>
-                    </a>
+                    <span class="commit-hash" th:text="${#strings.substring(c.sha,0,7)}">a1b2c3d</span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="pagination">
