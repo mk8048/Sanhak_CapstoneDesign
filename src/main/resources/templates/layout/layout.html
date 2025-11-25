@@ -6,11 +6,7 @@
     <title>캡스톤 매니저</title>
     <style>
         /* 기본 스타일 초기화 */
-        body,
-        h1,
-        ul,
-        p,
-        input {
+        body, h1, ul, p, input {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -20,11 +16,10 @@
         body {
             background-color: #f0f2f5;
         }
-
-        /* 전체 레이아웃 컨테이너 */
-        .container {
+        .app-container {
             display: flex;
             height: 100vh;
+            width: 100%; /* 전체 너비 사용 */
         }
 
         /* --- 사이드바 (sidebar.html에서 가져올 부분의 스타일) --- */
@@ -54,7 +49,7 @@
             font-size: 1.1em;
         }
 
-        /*액션 버튼 컨테이너 (마이페이지/로그아웃) */
+        /* 액션 버튼 컨테이너 (마이페이지/로그아웃) */
         .profile-actions {
             display: flex;
             justify-content: space-between;
@@ -105,9 +100,7 @@
 
         .sidebar .nav-menu a {
             text-decoration: none;
-            /* 밑줄 제거 */
             color: inherit;
-            /* 부모(li)의 색상을 상속 (방문 시 보라색 방지) */
         }
 
         /* --- 메인 콘텐츠 --- */
@@ -149,6 +142,15 @@
             font-size: 1em;
         }
 
+        /* (이슈 해결) id 추가 */
+        #searchQuery {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 1em;
+        }
+
         header .search-bar .search-icon {
             position: absolute;
             right: 15px;
@@ -167,7 +169,6 @@
         /* --- 알림 아이콘 및 드롭다운 스타일 --- */
         .notification-container {
             margin-left: auto;
-            /* 헤더 우측으로 정렬 */
             position: relative;
             display: flex;
             align-items: center;
@@ -191,14 +192,12 @@
             font-size: 0.6em;
             font-weight: bold;
             display: none;
-            /* 알림이 있을 때만 표시 (JS로 제어 가능) */
         }
 
         .notification-dropdown {
             display: none;
             position: absolute;
             top: 50px;
-            /* 아이콘 아래 위치 */
             right: 0;
             width: 320px;
             background-color: #ffffff;
@@ -262,82 +261,81 @@
 </head>
 
 <body>
-    <div class="container">
-        <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+<div class="app-container">
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
 
-        <div class="main-content">
-            <header>
-                <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
-                <div class="search-bar">
-                    <input type="text" placeholder="검색">
-                    <span class="search-icon">🔍</span>
+    <div class="main-content">
+        <header>
+            <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
+            <div class="search-bar">
+                <input type="text" name="query" id="searchQuery" placeholder="검색">
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <div class="notification-container">
+                <div class="notification-icon" onclick="toggleNotification()">
+                    🔔
+                    <span class="notification-badge"
+                          id="notificationBadge"
+                          th:if="${unreadCount != null and unreadCount > 0}"
+                          th:text="${unreadCount}"
+                          style="display: inline-block;">
+                        </span>
                 </div>
 
-                <!-- 알림 아이콘 및 드롭다운 -->
-                <div class="notification-container">
-                    <div class="notification-icon" onclick="toggleNotification()">
-                        🔔
-                        <span class="notification-badge"
-                              id="notificationBadge"
-                              th:if="${unreadCount != null and unreadCount > 0}"
-                              th:text="${unreadCount}"
-                              style="display: inline-block;">
-                        </span>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        알림
+                        <span style="font-size: 0.8em; color: #007bff; cursor: pointer;">모두 읽음</span>
                     </div>
 
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="notification-header">
-                            알림
-                            <span style="font-size: 0.8em; color: #007bff; cursor: pointer;">모두 읽음</span>
+                    <div class="notification-list">
+                        <div class="notification-empty" th:if="${#lists.isEmpty(globalNotifications)}">
+                            새로운 알림이 없습니다.
                         </div>
 
-                        <div class="notification-list">
-                            <div class="notification-empty" th:if="${#lists.isEmpty(globalNotifications)}">
-                                새로운 알림이 없습니다.
-                            </div>
+                        <div class="notification-item"
+                             th:each="noti : ${globalNotifications}"
+                             th:onclick="|location.href='@{${noti.relatedUrl}}'|"
+                             style="cursor: pointer;">
 
-                            <div class="notification-item"
-                                 th:each="noti : ${globalNotifications}"
-                                 <th:onclick="|location.href='@{${noti.relatedUrl}}'|"
-                                 style="cursor: pointer;">
+                            <div th:text="${noti.message}">새로운 알림입니다.</div>
 
-                                <div th:text="${noti.message}">새로운 알림입니다.</div>
-
-                                <span class="time"
-                                      th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">
+                            <span class="time"
+                                  th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">
                                     2025-11-20 12:00
                                 </span>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="page-content" layout:fragment="content">
-                <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
-            </main>
-        </div>
+        <main class="page-content" layout:fragment="content">
+            <p>기본 콘텐츠 영역입니다. 이 내용은 실제 페이지의 내용으로 교체됩니다.</p>
+        </main>
     </div>
+</div>
 
-    <script>
-        function toggleNotification() {
-            const dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('active');
-        }
+<script>
+    function toggleNotification() {
+        const dropdown = document.getElementById('notificationDropdown');
+        dropdown.classList.toggle('active');
+    }
 
-        // 화면의 다른 곳을 클릭하면 드롭다운 닫기
-        window.onclick = function (event) {
-            if (!event.target.closest('.notification-container')) {
-                var dropdowns = document.getElementsByClassName("notification-dropdown");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('active')) {
-                        openDropdown.classList.remove('active');
-                    }
+    // 화면의 다른 곳을 클릭하면 드롭다운 닫기
+    window.onclick = function (event) {
+        if (!event.target.closest('.notification-container')) {
+            var dropdowns = document.getElementsByClassName("notification-dropdown");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('active')) {
+                    openDropdown.classList.remove('active');
                 }
             }
         }
-    </script>
+    }
+</script>
 </body>
 
 </html>
