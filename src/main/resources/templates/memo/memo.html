@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
+<head>
+    <title>메모장</title>
+    <style>
+        /* 메모 페이지 전용 스타일 */
+        .memo-wrapper {
+            display: flex;
+            height: calc(100vh - 80px);
+            /* 헤더 높이 제외 */
+            overflow: hidden;
+        }
+
+        /* 중앙 캔버스 영역 */
+        .memo-canvas {
+            flex-grow: 1;
+            position: relative;
+            background-color: #e9ecef;
+            overflow: hidden;
+            /* 메모가 캔버스 밖으로 나가는 것 방지 */
+            background-image: radial-gradient(#dee2e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            /* 격자 무늬 배경 */
+        }
+
+        /* 오른쪽 메모 리스트 영역 */
+        .memo-list-sidebar {
+            width: 320px;
+            background-color: #ffffff;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .memo-list-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f1f1;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-memo-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: background-color 0.2s;
+        }
+
+        .add-memo-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .memo-list-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .memo-list-item {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .memo-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .memo-list-item p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 캔버스 내의 메모 스타일 */
+        .canvas-memo {
+            position: absolute;
+            width: 200px;
+            min-height: 150px;
+            background-color: #fff7d1;
+            /* 포스트잇 색상 */
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 2px;
+            cursor: grab;
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-memo:active {
+            cursor: grabbing;
+            box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            /* 드래그 중인 메모를 최상단으로 */
+        }
+
+        .canvas-memo-header {
+            display: flex;
+            justify-content: flex-end;
+            /* 제목 제거로 인해 우측 정렬 */
+            margin-bottom: 10px;
+            /* border-bottom: 1px dashed rgba(0, 0, 0, 0.1); 제목 제거로 구분선 제거 고려했으나 닫기 버튼 영역 유지를 위해 유지하거나 스타일 조정 */
+            padding-bottom: 5px;
+        }
+
+        .btn-close-memo {
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #888;
+            line-height: 1;
+        }
+
+        .btn-close-memo:hover {
+            color: #333;
+        }
+
+        .canvas-memo-content {
+            flex-grow: 1;
+            font-size: 0.9em;
+            line-height: 1.4;
+            outline: none;
+            /* 편집 시 테두리 제거 */
+            white-space: pre-wrap;
+            /* 줄바꿈 유지 */
+        }
+
+        /* 색상 테마 예시 */
+        .memo-yellow {
+            background-color: #fff7d1;
+        }
+
+        .memo-blue {
+            background-color: #e3f2fd;
+        }
+
+        .memo-green {
+            background-color: #e8f5e9;
+        }
+
+        .memo-red {
+            background-color: #ffebee;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content" style="height: 100%; display: flex; flex-direction: column;">
+        <div class="memo-wrapper">
+            <!-- 중앙: 메모 캔버스 -->
+            <div class="memo-canvas" id="memoCanvas">
+                <!-- 메모들이 여기에 동적으로 추가됩니다 -->
+            </div>
+
+            <!-- 오른쪽: 메모 리스트 -->
+            <div class="memo-list-sidebar">
+                <div class="memo-list-header">
+                    메모 목록
+                    <button class="add-memo-btn" id="addMemoBtn" title="새 메모 추가">+</button>
+                </div>
+                <div class="memo-list-content" id="memoListContent">
+                    <!-- 리스트 아이템들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const canvas = document.getElementById('memoCanvas');
+                const memoListContent = document.getElementById('memoListContent');
+                const addMemoBtn = document.getElementById('addMemoBtn');
+
+                // 전역 변수
+                let isDragging = false;
+                let currentDraggable = null;
+                let initialX;
+                let initialY;
+                let zIndexCounter = 100;
+
+                // 초기 로드
+                loadMemos();
+
+                // 이벤트 리스너 등록
+                addMemoBtn.addEventListener('click', createNewMemo);
+
+                canvas.addEventListener('mousedown', dragStart);
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('mousemove', drag);
+
+                // 메모 로드 함수
+                function loadMemos() {
+                    // 캔버스 메모 로드
+                    fetch('/api/memo/canvas')
+                        .then(response => response.json())
+                        .then(memos => {
+                            canvas.innerHTML = ''; // 초기화
+                            memos.forEach(memo => renderMemoCanvas(memo));
+                        })
+                        .catch(error => console.error('Error loading canvas memos:', error));
+
+                    // 리스트 메모 로드
+                    fetch('/api/memo/list')
+                        .then(response => response.json())
+                        .then(memos => {
+                            memoListContent.innerHTML = ''; // 초기화
+                            memos.forEach(memo => renderMemoList(memo));
+                        })
+                        .catch(error => console.error('Error loading list memos:', error));
+                }
+
+                // 새 메모 생성
+                function createNewMemo() {
+                    const newMemo = {
+                        projectId: 1, // 임시 프로젝트 ID, 실제로는 컨텍스트에서 가져와야 함
+                        authorId: "user1", // 임시 사용자 ID
+                        content: "새 메모",
+                        x_pos: 50,
+                        y_pos: 50,
+                        color: getRandomColor()
+                    };
+
+                    fetch('/api/memo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(newMemo)
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Failed to create memo');
+                            return response.json();
+                        })
+                        .then(savedMemo => {
+                            renderMemoCanvas(savedMemo);
+                            renderMemoList(savedMemo);
+                        })
+                        .catch(error => console.error('Error creating memo:', error));
+                }
+
+                // 캔버스에 메모 렌더링
+                function renderMemoCanvas(memo) {
+                    const memoEl = document.createElement('div');
+                    memoEl.className = `canvas-memo ${getMemoColorClass(memo.color)}`;
+                    memoEl.style.left = `${memo.x_pos}px`;
+                    memoEl.style.top = `${memo.y_pos}px`;
+                    memoEl.dataset.id = memo.id;
+                    memoEl.draggable = false; // 커스텀 드래그 사용
+
+                    memoEl.innerHTML = `
+                        <div class="canvas-memo-header">
+                            <span class="btn-close-memo" onclick="deleteMemo(${memo.id})">×</span>
+                        </div>
+                        <div class="canvas-memo-content" contenteditable="true">${memo.content}</div>
+                    `;
+
+                    // 내용 수정 이벤트 (debounce 적용)
+                    const contentEl = memoEl.querySelector('.canvas-memo-content');
+                    let timeoutId;
+                    contentEl.addEventListener('input', function () {
+                        clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            updateMemoContent(memo.id, this.innerText);
+                        }, 500);
+                    });
+
+                    // 포커스 시 z-index 증가
+                    memoEl.addEventListener('mousedown', function () {
+                        this.style.zIndex = ++zIndexCounter;
+                    });
+
+                    canvas.appendChild(memoEl);
+                }
+
+                // 리스트에 메모 렌더링
+                function renderMemoList(memo) {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'memo-list-item';
+                    itemEl.dataset.id = memo.id;
+                    itemEl.onclick = () => focusMemoOnCanvas(memo.id);
+
+                    itemEl.innerHTML = `
+                        <p>${memo.content}</p>
+                    `;
+
+                    memoListContent.appendChild(itemEl);
+                }
+
+                // 메모 삭제
+                window.deleteMemo = function (id) {
+                    if (!confirm('메모를 삭제하시겠습니까?')) return;
+
+                    fetch(`/api/memo/${id}`, {
+                        method: 'DELETE'
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                // UI에서 제거
+                                const canvasMemo = canvas.querySelector(`.canvas-memo[data-id="${id}"]`);
+                                const listMemo = memoListContent.querySelector(`.memo-list-item[data-id="${id}"]`);
+                                if (canvasMemo) canvasMemo.remove();
+                                if (listMemo) listMemo.remove();
+                            } else {
+                                alert('메모 삭제 실패');
+                            }
+                        })
+                        .catch(error => console.error('Error deleting memo:', error));
+                };
+
+                // 메모 내용 업데이트
+                function updateMemoContent(id, content) {
+                    fetch(`/api/memo/list/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ content: content })
+                    })
+                        .then(response => response.json())
+                        .then(updatedMemo => {
+                            // 리스트 업데이트
+                            const listMemo = memoListContent.querySelector(`.memo-list-item[data-id="${id}"] p`);
+                            if (listMemo) listMemo.innerText = updatedMemo.content;
+                        })
+                        .catch(error => console.error('Error updating memo content:', error));
+                }
+
+                // 메모 위치 업데이트
+                function updateMemoPosition(id, x, y) {
+                    // 현재 내용과 색상도 함께 보내야 함 (API 요구사항에 따라)
+                    // 여기서는 위치만 업데이트하는 것으로 가정하지만, API가 전체 객체를 요구할 수 있음
+                    // MemoController를 보면 UpdateMemoCanvasRequest는 content, x_pos, y_pos, color를 모두 받음
+                    // 따라서 현재 상태를 가져와서 보내야 함.
+
+                    const memoEl = canvas.querySelector(`.canvas-memo[data-id="${id}"]`);
+                    const content = memoEl.querySelector('.canvas-memo-content').innerText;
+                    // 색상은 클래스에서 유추하거나 데이터 속성으로 저장해둬야 함. 
+                    // 간단히 하기 위해 기본값 또는 현재 클래스 기반으로 처리
+                    // 여기서는 API가 부분 업데이트를 지원하지 않는다면 모든 필드를 보내야 함.
+                    // MemoController의 updateCanvas는 모든 필드를 덮어씌우므로 주의 필요.
+                    // 편의상 색상은 유지된다고 가정하고, content는 현재 content 사용.
+
+                    const color = getColorFromClass(memoEl.className);
+
+                    fetch(`/api/memo/canvas/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: content,
+                            x_pos: Math.round(x),
+                            y_pos: Math.round(y),
+                            color: color
+                        })
+                    })
+                        .catch(error => console.error('Error updating memo position:', error));
+                }
+
+                // 드래그 앤 드롭 로직
+                function dragStart(e) {
+                    const target = e.target.closest('.canvas-memo');
+                    // 닫기 버튼이나 내용 편집 중에는 드래그 방지
+                    if (!target || e.target.classList.contains('btn-close-memo') || e.target.classList.contains('canvas-memo-content')) {
+                        return;
+                    }
+
+                    currentDraggable = target;
+                    initialX = e.clientX - currentDraggable.offsetLeft;
+                    initialY = e.clientY - currentDraggable.offsetTop;
+                    isDragging = true;
+
+                    currentDraggable.style.zIndex = ++zIndexCounter;
+                }
+
+                function dragEnd(e) {
+                    if (!isDragging || !currentDraggable) return;
+
+                    const id = currentDraggable.dataset.id;
+                    const x = currentDraggable.offsetLeft;
+                    const y = currentDraggable.offsetTop;
+
+                    updateMemoPosition(id, x, y);
+
+                    isDragging = false;
+                    currentDraggable = null;
+                }
+
+                function drag(e) {
+                    if (isDragging && currentDraggable) {
+                        e.preventDefault();
+
+                        let currentX = e.clientX - initialX;
+                        let currentY = e.clientY - initialY;
+
+                        // 캔버스 경계 체크 (선택사항)
+                        if (currentX < 0) currentX = 0;
+                        if (currentY < 0) currentY = 0;
+
+                        currentDraggable.style.left = `${currentX}px`;
+                        currentDraggable.style.top = `${currentY}px`;
+                    }
+                }
+
+                // 유틸리티 함수
+                function getRandomColor() {
+                    const colors = ['#fff7d1', '#e3f2fd', '#e8f5e9', '#ffebee'];
+                    return colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                function getMemoColorClass(colorHex) {
+                    if (colorHex === '#fff7d1') return 'memo-yellow';
+                    if (colorHex === '#e3f2fd') return 'memo-blue';
+                    if (colorHex === '#e8f5e9') return 'memo-green';
+                    if (colorHex === '#ffebee') return 'memo-red';
+                    return 'memo-yellow'; // 기본값
+                }
+
+                function getColorFromClass(className) {
+                    if (className.includes('memo-blue')) return '#e3f2fd';
+                    if (className.includes('memo-green')) return '#e8f5e9';
+                    if (className.includes('memo-red')) return '#ffebee';
+                    return '#fff7d1';
+                }
+
+                function focusMemoOnCanvas(id) {
+                    const memoEl = canvas.querySelector(`.canvas-memo[data-id="${id}"]`);
+                    if (memoEl) {
+                        // 스크롤 이동 등 필요 시 구현
+                        memoEl.style.zIndex = ++zIndexCounter;
+                        // 하이라이트 효과 등을 줄 수 있음
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

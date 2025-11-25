@@ -15,4 +15,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // 읽지 않은 알림 개수만 조회 (배지 표시용 가벼운 쿼리)
     long countByRecipientAndIsReadFalse(User user);
+
+    // 모든 알림 조회 (최신순)
+    List<Notification> findAllByRecipientOrderByCreatedAtDesc(User user);
 }

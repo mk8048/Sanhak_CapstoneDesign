@@ -29,7 +29,11 @@
                 </a>
             </li>
             <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
-            <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
+            <li>
+                <a th:href="@{'/notifications'}">
+                    <span class="icon" style="margin-right: 15px;">📢</span> Notice
+                </a>
+            </li>
             <li>
                 <a th:href="@{'/tasks'}">
                     <span class="icon" style="margin-right: 15px;">📅</span> Tasks
@@ -50,7 +54,11 @@
                     <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
                 </a>
             </li>
-            <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
+            <li>
+                <a th:href="@{'/memo'}">
+                    <span class="icon" style="margin-right: 15px;">🗒️</span> Memo
+                </a>
+            </li>
 
             <!-- 산출물 with expandable submenu -->
             <li class="menu-toggle" onclick="toggleSubmenu(this)">

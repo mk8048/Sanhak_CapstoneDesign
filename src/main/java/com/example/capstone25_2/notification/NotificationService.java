@@ -27,8 +27,6 @@ public class NotificationService {
     private final ProjectService projectService;
     private final SimpMessagingTemplate messagingTemplate; // 웹소켓 발송 도구 주입
 
-
-
     @Async
     @EventListener
     public void handleMemoEvent(MemoEvent memoEvent) {
@@ -51,7 +49,8 @@ public class NotificationService {
             type = Notification.NotificationType.MEMO_UPDATED;
         }
 
-        String url = "/project/" + projectId + "/memos/" + memo.getId();
+        // [MODIFIED] URL을 /memo로 변경
+        String url = "/memo";
 
         for (User recipient : recipients) {
             // 작성자 본인(AuthorId)에게는 알림을 보내지 않음
@@ -85,7 +84,8 @@ public class NotificationService {
         String url = "/projects/" + project.getProjectId();
 
         for (User recipient : recipients) {
-            Notification notification = Notification.of(recipient, message, Notification.NotificationType.PROJECT_DEADLINE_IMMINENT, url);
+            Notification notification = Notification.of(recipient, message,
+                    Notification.NotificationType.PROJECT_DEADLINE_IMMINENT, url);
             notificationRepository.save(notification);
             // pushService.sendNotification(recipient, notification); // 5단계
 
@@ -96,32 +96,40 @@ public class NotificationService {
         }
     }
 
-//    @Async
-//    @EventListener
-//    public void handleFocusModeEvent(FocusModeEvent event) {
-//        User eventUser = event.getUser();
-//        if (!event.isStarted()) return; // 집중 모드 시작 시에만 알림
-//
-//        // 사용자가 참여하고 있는 모든 프로젝트의 멤버들에게 알림
-//        List<Project> projects = projectMemberRepository.findProjectsByUserId(eventUser.getId());
-//        for (Project project : projects) {
-//            List<User> recipients = projectMemberRepository.findUsersByProjectId(project.getId());
-//            recipients.remove(eventUser); // 자기 자신은 제외
-//
-//            String message = "팀원 '" + eventUser.getName() + "'님이 집중 모드를 시작했습니다.";
-//            String url = "/projects/" + project.getId() + "/members/" + eventUser.getId();
-//
-//            for (User recipient : recipients) {
-//                Notification notification = Notification.of(recipient, message, NotificationType.FOCUS_MODE_STARTED, url);
-//                notificationRepository.save(notification);
-//                // pushService.sendNotification(recipient, notification); // 5단계
-//            }
-//        }
-//    }
-
+    // @Async
+    // @EventListener
+    // public void handleFocusModeEvent(FocusModeEvent event) {
+    // User eventUser = event.getUser();
+    // if (!event.isStarted()) return; // 집중 모드 시작 시에만 알림
+    //
+    // // 사용자가 참여하고 있는 모든 프로젝트의 멤버들에게 알림
+    // List<Project> projects =
+    // projectMemberRepository.findProjectsByUserId(eventUser.getId());
+    // for (Project project : projects) {
+    // List<User> recipients =
+    // projectMemberRepository.findUsersByProjectId(project.getId());
+    // recipients.remove(eventUser); // 자기 자신은 제외
+    //
+    // String message = "팀원 '" + eventUser.getName() + "'님이 집중 모드를 시작했습니다.";
+    // String url = "/projects/" + project.getId() + "/members/" +
+    // eventUser.getId();
+    //
+    // for (User recipient : recipients) {
+    // Notification notification = Notification.of(recipient, message,
+    // NotificationType.FOCUS_MODE_STARTED, url);
+    // notificationRepository.save(notification);
+    // // pushService.sendNotification(recipient, notification); // 5단계
+    // }
+    // }
+    // }
 
     public List<Notification> getUnreadNotifications(User user) {
         return notificationRepository.findAllByRecipientAndIsReadFalseOrderByCreatedAtDesc(user);
+    }
+
+    // 모든 알림 조회
+    public List<Notification> getAllNotifications(User user) {
+        return notificationRepository.findAllByRecipientOrderByCreatedAtDesc(user);
     }
 
     // 1. 단일 알림 읽음 처리
@@ -140,7 +148,8 @@ public class NotificationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        List<Notification> unreadList = notificationRepository.findAllByRecipientAndIsReadFalseOrderByCreatedAtDesc(user);
+        List<Notification> unreadList = notificationRepository
+                .findAllByRecipientAndIsReadFalseOrderByCreatedAtDesc(user);
 
         // 벌크 연산으로 최적화할 수도 있지만, JPA Dirty Checking 사용 시 반복문
         for (Notification notification : unreadList) {

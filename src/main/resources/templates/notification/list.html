@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
+<head>
+    <title>알림 내역</title>
+    <style>
+        .notification-list-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #e8f0fe;
+        }
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-message {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .notification-time {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .notification-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="notification-list-container">
+            <h2 style="margin-bottom: 20px;">알림 내역</h2>
+
+            <div th:if="${#lists.isEmpty(notifications)}" style="text-align: center; padding: 40px; color: #888;">
+                알림 내역이 없습니다.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(notifications)}">
+                <div th:each="noti : ${notifications}" class="notification-item"
+                    th:classappend="${!noti.read} ? 'unread'">
+                    <a th:href="@{${noti.relatedUrl}}" class="notification-link">
+                        <div class="notification-content">
+                            <div class="notification-message" th:text="${noti.message}">알림 메시지</div>
+                            <div class="notification-time"
+                                th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">2025-11-25 12:00
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

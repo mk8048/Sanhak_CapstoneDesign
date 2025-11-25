@@ -20,29 +20,6 @@ public class ProjectWebController {
     private final ProjectService projectService;
     private final UserService userService;
 
-    @ModelAttribute
-    public void addCommonAttributesToModel(HttpSession session, Model model) {
-        // 1. currentProjectId 주입
-        Long projectId = (Long) session.getAttribute("currentProjectId");
-        if (projectId != null) {
-            model.addAttribute("currentProjectId", projectId);
-        }
-
-        // 2. ⭐️ displayName 주입 (닉네임/이름 우선순위) ⭐️
-        String userName = (String) session.getAttribute("userName");
-        String userNickname = (String) session.getAttribute("userNickname");
-
-        if (userName != null) { // 로그인 상태일 때만
-            String displayName;
-            if (userNickname != null && !userNickname.isEmpty()) {
-                displayName = userNickname;
-            } else {
-                displayName = userName;
-            }
-            model.addAttribute("displayName", displayName);
-        }
-    }
-
     // Helper method: 로그인 상태 확인 및 userId 반환
     private String getUserId(HttpSession session) {
         String userId = (String) session.getAttribute("userId");
@@ -60,7 +37,7 @@ public class ProjectWebController {
 
             model.addAttribute("currentUserId", userId);
 
-            // ⭐️ Service에서 사용자별 프로젝트 목록 조회
+            // Service에서 사용자별 프로젝트 목록 조회
             List<ProjectResponse> projects = projectService.findProjectsByUserId(userId);
             model.addAttribute("projectList", projects);
 
@@ -86,12 +63,12 @@ public class ProjectWebController {
     // 3. 새 프로젝트 생성 데이터 처리 (POST /project/create)
     @PostMapping("/project/create")
     public String createProject(@ModelAttribute AddProjectRequest request,
-                                HttpSession session,
-                                RedirectAttributes redirectAttributes) {
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         try {
             String creatorId = getUserId(session);
 
-            // ⭐️ Service의 변경된 save 메서드 호출 (creatorId 전달) ⭐️
+            // Service의 변경된 save 메서드 호출 (creatorId 전달)
             projectService.save(creatorId, request);
 
             redirectAttributes.addFlashAttribute("successMessage", "새 프로젝트가 생성되었습니다.");
@@ -106,7 +83,7 @@ public class ProjectWebController {
 
     // 4. 프로젝트별 메인 페이지 진입 (GET /projects/{projectName}/main)
     @GetMapping("/projects/{projectId}/main")
-    public String projectMainPage(@PathVariable Long projectId, HttpSession session, Model model) { // ⭐️ HttpSession 추가
+    public String projectMainPage(@PathVariable Long projectId, HttpSession session, Model model) { // HttpSession 추가
         try {
             String userId = getUserId(session);
 
@@ -132,7 +109,8 @@ public class ProjectWebController {
     }
 
     @PostMapping("/project/leave")
-    public String leaveProject(@RequestParam Long projectId, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String leaveProject(@RequestParam Long projectId, HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
         String userId = (String) session.getAttribute("userId");
 
@@ -181,11 +159,11 @@ public class ProjectWebController {
         }
     }
 
-    // ⭐️ [수정] 1. 팀원 조회 (Search) - 리다이렉트 제거 ⭐️
+    // [수정] 1. 팀원 조회 (Search) - 리다이렉트 제거
     @PostMapping("/projects/search-member")
     public String searchMember(@RequestParam Long projectId,
-                               @RequestParam String emailOrId,
-                               RedirectAttributes redirectAttributes) { // ⭐️ Model 대신 RedirectAttributes
+            @RequestParam String emailOrId,
+            RedirectAttributes redirectAttributes) { // Model 대신 RedirectAttributes
 
         // 1. 리다이렉트할 URL을 미리 정의
         String redirectUrl = "redirect:/projects/" + projectId + "/members";
@@ -207,17 +185,17 @@ public class ProjectWebController {
             redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
         }
 
-        // 6. ⭐️ 원래의 GET 페이지로 리다이렉트 ⭐️
+        // 6. 원래의 GET 페이지로 리다이렉트
         return redirectUrl;
     }
 
-    // ⭐️ [수정] 2. 팀원 초대 (Invite) - 리다이렉트 유지 ⭐️
+    // [수정] 2. 팀원 초대 (Invite) - 리다이렉트 유지
     // 초대(데이터 변경)는 리다이렉트(PRG) 패턴을 유지하는 것이 좋습니다.
     @PostMapping("/projects/invite")
     public String inviteMember(@RequestParam Long projectId,
-                               @RequestParam String userIdToInvite, // ⭐️ HTML의 name="userIdToInvite"와 철자가 정확히 같아야 함
-                               HttpSession session,
-                               RedirectAttributes redirectAttributes) {
+            @RequestParam String userIdToInvite, // HTML의 name="userIdToInvite"와 철자가 정확히 같아야 함
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
         String inviterId = getUserId(session); // 요청한 사람 (로그인한 사람)
 

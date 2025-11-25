@@ -45,6 +45,26 @@ public class GlobalDataController {
             model.addAttribute("globalNotifications", notifications);
             model.addAttribute("unreadCount", notifications.size());
 
+            // 4. displayName 주입 (닉네임/이름 우선순위)
+            String userName = (String) session.getAttribute("userName");
+            String userNickname = (String) session.getAttribute("userNickname");
+
+            if (userName != null) {
+                String displayName;
+                if (userNickname != null && !userNickname.isEmpty()) {
+                    displayName = userNickname;
+                } else {
+                    displayName = userName;
+                }
+                model.addAttribute("displayName", displayName);
+            }
+
+            // 5. currentProjectId 주입
+            Long projectId = (Long) session.getAttribute("currentProjectId");
+            if (projectId != null) {
+                model.addAttribute("currentProjectId", projectId);
+            }
+
         } catch (IllegalArgumentException e) {
             // Case: 세션에는 ID가 있는데 DB에 유저가 없는 경우 (탈퇴 등)
             log.warn("GlobalDataController - 유효하지 않은 사용자 세션 ID: {}", userId);
