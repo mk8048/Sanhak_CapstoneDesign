@@ -46,15 +46,23 @@
         /* 커밋 리스트 */
         .commit-list { display: flex; flex-direction: column; gap: 12px; }
 
+        /* a 태그로 바뀌었으므로 밑줄 제거 및 텍스트 색상 상속 설정 */
         .commit-card {
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 8px; padding: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex; flex-direction: column; gap: 8px;
+
+            /* 링크 스타일 초기화 */
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
+
         .commit-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color); /* 호버 시 테두리 색상 강조 */
         }
 
         .msg {
@@ -75,7 +83,7 @@
         .commit-hash {
             font-family: 'Monaco', monospace; background-color: #f1f5f9;
             padding: 2px 6px; border-radius: 4px; color: #475569;
-            font-size: 12px; text-decoration: none; border: 1px solid #e2e8f0;
+            font-size: 12px; border: 1px solid #e2e8f0;
         }
 
         .pagination {
@@ -99,7 +107,11 @@
         </div>
 
         <div class="commit-list">
-            <div th:each="c : ${commits}" class="commit-card">
+            <a th:each="c : ${commits}"
+               th:href="${c.html_url}"
+               target="_blank"
+               class="commit-card">
+
                 <div class="msg" th:text="${c.message}">Commit Message</div>
 
                 <div class="meta">
@@ -113,11 +125,9 @@
 
                     <span style="color: #e5e7eb;">|</span>
 
-                    <a th:href="${c.html_url}" target="_blank" class="commit-hash" title="GitHub에서 보기">
-                        <span th:text="${#strings.substring(c.sha,0,7)}">a1b2c3d</span>
-                    </a>
+                    <span class="commit-hash" th:text="${#strings.substring(c.sha,0,7)}">a1b2c3d</span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="pagination">
