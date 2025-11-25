@@ -16,9 +16,9 @@ public class Memo {
     //Integer로 생성 시 1초에 하나씩 메모 생성하면 소진까지 68년 걸림
 
     @Column(nullable = true)
-    private Integer prj_id;
+    private Long projectId;
     @Column(nullable = false)
-    private Integer author_id;
+    private String authorId;
     @Column(nullable = false)
     private String content;
     @Column(nullable = false)
@@ -55,8 +55,8 @@ public class Memo {
     public static Memo from(AddMemoRequest request) {
         Memo memo = new Memo();
 
-        memo.prj_id = request.getProject_id();
-        memo.author_id = request.getAuthor_id();
+        memo.projectId = request.getProjectId();
+        memo.authorId = request.getAuthorId();
         memo.content = request.getContent();
         memo.x_pos = (request.getX_pos() != null) ? request.getX_pos() : 0;
         memo.y_pos = (request.getY_pos() != null) ? request.getY_pos() : 0;
@@ -81,11 +81,11 @@ public class Memo {
     public Long getId() {
         return id;
     }
-    public Integer getPrjId() {
-        return prj_id;
+    public Long getProjectId() {
+        return projectId;
     }
-    public Integer getAuthor_id() {
-        return author_id;
+    public String getAuthorId() {
+        return authorId;
     }
     public String getContent() {
         return content;

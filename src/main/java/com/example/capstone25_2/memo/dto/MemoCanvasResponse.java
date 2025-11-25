@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class MemoCanvasResponse {
 
     private final Long id;
-    private final Integer author_id;
+    private final String authorId;
     private final String content;
     private final Integer x_pos;
     private final Integer y_pos;
@@ -19,7 +19,7 @@ public class MemoCanvasResponse {
 
     public MemoCanvasResponse(Memo memo) {
         this.id = memo.getId();
-        this.author_id = memo.getAuthor_id();
+        this.authorId = memo.getAuthorId();
         this.content = memo.getContent();
         this.x_pos = memo.getX_pos();
         this.y_pos = memo.getY_pos();
@@ -34,8 +34,8 @@ public class MemoCanvasResponse {
     public Long getId() {
         return id;
     }
-    public Integer getAuthor_id() {
-        return author_id;
+    public String getAuthorId() {
+        return authorId;
     }
     public String getContent() {
         return content;

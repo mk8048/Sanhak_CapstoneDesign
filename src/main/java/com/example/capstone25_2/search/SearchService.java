@@ -71,7 +71,7 @@ public class SearchService {
                     .title("메모 #" + m.getId())
                     .description(truncate(m.getContent(), 100))
                     .date(m.getModifiedAt())
-                    .metadata("작성자 ID: " + m.getAuthor_id())
+                    .metadata("작성자 ID: " + m.getAuthorId())
                     .url("/memo")
                     .build());
         }

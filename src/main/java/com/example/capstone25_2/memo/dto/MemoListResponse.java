@@ -8,14 +8,14 @@ import java.time.LocalDateTime;
 public class MemoListResponse {
 
     private final Long id;
-    private final Integer author_id;
+    private final String authorId;
     private final String content;
     private final LocalDateTime modifiedAt;
 
     // Memo 엔티티를 받아서 MemoListResponse DTO를 생성하는 생성자
     public MemoListResponse(Memo memo) {
         this.id = memo.getId();
-        this.author_id = memo.getAuthor_id();
+        this.authorId = memo.getAuthorId();
         this.content = memo.getContent();
         this.modifiedAt = memo.getModifiedAt();
     }
@@ -24,13 +24,13 @@ public class MemoListResponse {
     public Long getId() {
         return id;
     }
-    public Integer getAuthor_id() {
-        return author_id;
+    public String getAuthorId() {
+        return authorId;
     }
     public String getContent() {
         return content;
     }
-    public LocalDateTime getModifidAt() {
+    public LocalDateTime getModifiedAt() {
         return modifiedAt;
     }
 }

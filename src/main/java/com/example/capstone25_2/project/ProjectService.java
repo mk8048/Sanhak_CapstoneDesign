@@ -35,7 +35,7 @@ public class ProjectService {
         return user.getId();
     }
 
-    // ⭐️ [MODIFIED] 프로젝트 목록 조회: ProjectMember 엔티티 조회로 변경 ⭐️
+    // [MODIFIED] 프로젝트 목록 조회: ProjectMember 엔티티 조회로 변경
     public List<ProjectResponse> findProjectsByUserId(String userId) {
         // ProjectMember 엔티티를 통해 userId가 포함된 프로젝트 조회 (Repository 쿼리 변경 필요)
         // findDistinctByMembers_UserId(String userId) 사용
@@ -71,7 +71,7 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    // ⭐️ [MODIFIED] 접근 권한 확인: ProjectMember 엔티티 검사 ⭐️
+    //  [MODIFIED] 접근 권한 확인: ProjectMember 엔티티 검사
     public boolean checkUserAccessById(String userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
@@ -87,7 +87,7 @@ public class ProjectService {
         throw new SecurityException("해당 프로젝트에 접근 권한이 없습니다.");
     }
 
-    // ⭐️ [MODIFIED] 프로젝트 생성: 소유자를 MEMBER 역할로 추가 ⭐️
+    //  [MODIFIED] 프로젝트 생성: 소유자를 MEMBER 역할로 추가
     @Transactional
     public Project save(String creatorId, AddProjectRequest request) {
         Long creatorPkId = getUserPkId(creatorId);
@@ -104,7 +104,7 @@ public class ProjectService {
         return projectRepository.save(newProject);
     }
 
-    // ⭐️ [MODIFIED] 프로젝트 탈퇴 로직 ⭐️
+    // [MODIFIED] 프로젝트 탈퇴 로직
     @Transactional
     public void leaveProject(String userId, Long projectId) {
         Long userPkId = getUserPkId(userId);
@@ -154,7 +154,7 @@ public class ProjectService {
         return project.getProjectName();
     }
 
-    // ⭐️ [MODIFIED] 프로젝트 멤버 조회: ProjectMember -> userId 추출 ⭐️
+    // [MODIFIED] 프로젝트 멤버 조회: ProjectMember -> userId 추출
     @Transactional(readOnly = true)
     public List<User> getProjectMembers(Long projectId) {
         Project project = projectRepository.findById(projectId)
@@ -179,15 +179,15 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
     }
 
-    // ⭐️ [MODIFIED] 팀원 초대: 역할(MEMBER) 지정하여 추가 ⭐️
+    // [MODIFIED] 팀원 초대: 역할(MEMBER) 지정하여 추가
     @Transactional
-    public void inviteMember(Long projectId, String inviterId, String emailOrId) { // ⭐️ inviterId 추가
+    public void inviteMember(Long projectId, String inviterId, String emailOrId) { // inviterId 추가
 
         // 1. 프로젝트 조회
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // 2. ⭐️ [권한 체크] 초대하는 사람이 '소유자'인지 확인 ⭐️
+        // 2.  [권한 체크] 초대하는 사람이 '소유자'인지 확인
         Long inviterPk = getUserPkId(inviterId); // 로그인한 사람의 PK 조회
 
         // 프로젝트 소유자(usersId)와 초대자(inviterPk)가 다르면 예외 발생
@@ -212,7 +212,7 @@ public class ProjectService {
         project.addMember(userToInvite.getId(), ProjectRole.MEMBER);
     }
 
-    // ⭐️ [MODIFIED] 멤버 여부 확인 ⭐️
+    // [MODIFIED] 멤버 여부 확인
     @Transactional(readOnly = true)
     public boolean isUserInProject(String userId, Long projectId) {
         Project project = projectRepository.findById(projectId)

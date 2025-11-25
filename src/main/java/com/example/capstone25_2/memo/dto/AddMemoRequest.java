@@ -2,19 +2,19 @@ package com.example.capstone25_2.memo.dto;
 
 @SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class AddMemoRequest {
-    private Integer project_id;
-    private Integer author_id;
+    private Long projectId;
+    private String authorId;
     private String content;
     private Integer x_pos;
     private Integer y_pos;
     private String color;
 
     //@getter 대신
-    public Integer getProject_id() {
-        return project_id;
+    public Long getProjectId() {
+        return projectId;
     }
-    public Integer getAuthor_id() {
-        return author_id;
+    public String getAuthorId() {
+        return authorId;
     }
     public String getContent() {
         return content;
@@ -30,11 +30,11 @@ public class AddMemoRequest {
     }
 
     //@setter 대신
-    public void  setProject_id(Integer project_id) {
-        this.project_id = project_id;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
-    public void setAuthor_id(Integer author_id) {
-        this.author_id = author_id;
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
     }
     public void setContent(String content) {
         this.content = content;

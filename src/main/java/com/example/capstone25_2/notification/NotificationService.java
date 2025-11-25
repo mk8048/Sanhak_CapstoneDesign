@@ -1,5 +1,7 @@
 package com.example.capstone25_2.notification;
 
+import com.example.capstone25_2.memo.Memo;
+import com.example.capstone25_2.memo.MemoEvent;
 import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.project.ProjectService;
 import com.example.capstone25_2.user.User;
@@ -27,32 +29,45 @@ public class NotificationService {
 
 
 
-//    @Async
-//    @EventListener
-//    public void handleMemoEvent(MemoEvent memoEvent) {
-//        Memo memo = event.getMemo();
-//        // 프로젝트 멤버 조회
-//        List<User> recipients = projectRepository.findUserByprojectId;
-//
-//        String message;
-//        Notification.NotificationType type;
-//
-//        if (event.getEventType() == MemoEvent.EventType.CREATED) {
-//            message = "새로운 메모가 추가되었습니다. :" + memo.getContent();
-//            type = Notification.NotificationType.MEMO_CREATED;
-//        } else {
-//            message = "메모가 수정되었습니다. :" + memo.getContent();
-//            type = Notification.NotificationType.MEMO_UPDATED;
-//        }
-//
-//        String url = "/project/" + memo.getProject_id() + "/memos/" + memo.getId();
-//
-//        for (User recipient : recipients) {
-//            Notification notification = Notification.of(recipient, message, type, url);
-//            notificationRepository.save(notification);
-//
-//        }
-//    }
+    @Async
+    @EventListener
+    public void handleMemoEvent(MemoEvent memoEvent) {
+        Memo memo = memoEvent.getMemo();
+        // Memo에서 프로젝트 ID 가져오기
+        Long projectId = memo.getProjectId();
+
+        List<User> recipients = projectService.getProjectMembers(projectId);
+
+        String message;
+
+        Notification.NotificationType type;
+
+        // 이벤트 타입에 따른 메시지 설정
+        if (memoEvent.getEventType() == MemoEvent.EventType.CREATED) {
+            message = "새로운 메모가 추가되었습니다: " + memo.getContent();
+            type = Notification.NotificationType.MEMO_CREATED;
+        } else {
+            message = "메모가 수정되었습니다: " + memo.getContent();
+            type = Notification.NotificationType.MEMO_UPDATED;
+        }
+
+        String url = "/project/" + projectId + "/memos/" + memo.getId();
+
+        for (User recipient : recipients) {
+            // 작성자 본인(AuthorId)에게는 알림을 보내지 않음
+            if (recipient.getId().equals(memo.getAuthorId())) {
+                continue;
+            }
+
+            // 1. DB 저장
+            Notification notification = Notification.of(recipient, message, type, url);
+            notificationRepository.save(notification);
+
+            // 2. 실시간 웹소켓 전송 (배지 카운트 업데이트)
+            long unreadCount = notificationRepository.countByRecipientAndIsReadFalse(recipient);
+            messagingTemplate.convertAndSend("/sub/notifications/" + recipient.getId(), unreadCount);
+        }
+    }
 
     @Async
     @EventListener
