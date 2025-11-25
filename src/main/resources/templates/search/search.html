@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 - 프로젝트 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 사이드바 스타일 */
+        .sidebar-container {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 메인 컨텐츠 */
+        .main-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .search-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 검색 헤더 */
+        .search-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .search-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .search-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* 검색 입력 영역 */
+        .search-input-container {
+            background: white;
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input-container:focus-within {
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: #667eea;
+        }
+
+        #searchInput {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1.2rem;
+            padding: 15px 0;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60%,
+            100% {
+                content: '...';
+            }
+        }
+
+        /* 검색 결과 영역 */
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .results-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .results-count {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .results-count strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        /* 검색 결과 카드 */
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .result-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .result-card.type-산출물 {
+            border-left-color: #667eea;
+        }
+
+        .result-card.type-프로젝트 {
+            border-left-color: #f093fb;
+        }
+
+        .result-card.type-메모 {
+            border-left-color: #4facfe;
+        }
+
+        .result-card.type-회의록 {
+            border-left-color: #43e97b;
+        }
+
+        .result-card.type-작업 {
+            border-left-color: #fa709a;
+        }
+
+        .result-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .badge-산출물 {
+            background: #667eea;
+        }
+
+        .badge-프로젝트 {
+            background: #f093fb;
+        }
+
+        .badge-메모 {
+            background: #4facfe;
+        }
+
+        .badge-회의록 {
+            background: #43e97b;
+        }
+
+        .badge-작업 {
+            background: #fa709a;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .result-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .result-metadata {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .result-metadata span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 결과 없음 */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .no-results p {
+            font-size: 1rem;
+            color: #999;
+        }
+
+        /* 초기 상태 */
+        .initial-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .initial-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .initial-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .initial-state p {
+            font-size: 1rem;
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 사이드바 -->
+    <div class="sidebar-container">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="main-container">
+        <div class="search-wrapper">
+            <!-- 검색 헤더 -->
+            <div class="search-header">
+                <h1>🔍 통합 검색</h1>
+                <p>프로젝트, 산출물, 메모, 회의록, 작업을 한 번에 검색하세요</p>
+            </div>
+
+            <!-- 검색 입력 -->
+            <div class="search-input-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="검색어를 입력하세요..." autocomplete="off">
+                <button class="search-btn" onclick="performSearch()">검색</button>
+            </div>
+
+            <!-- 로딩 상태 -->
+            <div id="loadingState" class="loading" style="display: none;">
+                검색 중
+            </div>
+
+            <!-- 검색 결과 -->
+            <div class="results-container" id="resultsContainer">
+                <!-- 초기 상태 -->
+                <div class="initial-state" id="initialState">
+                    <div class="initial-state-icon">🔎</div>
+                    <h3>검색을 시작하세요</h3>
+                    <p>찾고 싶은 내용을 검색창에 입력해주세요</p>
+                </div>
+
+                <!-- 결과 헤더 (검색 후 표시) -->
+                <div class="results-header" id="resultsHeader" style="display: none;">
+                    <div class="results-count">
+                        "<span id="searchKeyword"></span>" 검색 결과: <strong id="resultCount">0</strong>개
+                    </div>
+                </div>
+
+                <!-- 결과 목록 -->
+                <div id="resultsList"></div>
+
+                <!-- 결과 없음 -->
+                <div class="no-results" id="noResults" style="display: none;">
+                    <div class="no-results-icon">😔</div>
+                    <h3>검색 결과가 없습니다</h3>
+                    <p>다른 검색어로 다시 시도해보세요</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL 파라미터에서 검색어 가져오기
+        function getSearchKeywordFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('q') || '';
+        }
+
+        // 페이지 로드 시 URL에 검색어가 있으면 자동 검색
+        window.addEventListener('DOMContentLoaded', () => {
+            const keyword = getSearchKeywordFromUrl();
+            if (keyword) {
+                document.getElementById('searchInput').value = keyword;
+                performSearch();
+            }
+        });
+
+        // Enter 키로 검색
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // 검색 수행
+        async function performSearch() {
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            if (!keyword) {
+                alert('검색어를 입력해주세요');
+                return;
+            }
+
+            // URL 업데이트
+            const newUrl = window.location.pathname + '?q=' + encodeURIComponent(keyword);
+            window.history.pushState({}, '', newUrl);
+
+            // UI 상태 변경
+            document.getElementById('initialState').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('resultsHeader').style.display = 'none';
+            document.getElementById('resultsList').innerHTML = '';
+            document.getElementById('noResults').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/search?keyword=${encodeURIComponent(keyword)}`);
+                const results = await response.json();
+
+                // 로딩 숨기기
+                document.getElementById('loadingState').style.display = 'none';
+
+                // 검색어 및 결과 수 표시
+                document.getElementById('searchKeyword').textContent = keyword;
+                document.getElementById('resultCount').textContent = results.length;
+                document.getElementById('resultsHeader').style.display = 'block';
+
+                if (results.length === 0) {
+                    document.getElementById('noResults').style.display = 'block';
+                } else {
+                    displayResults(results);
+                }
+            } catch (error) {
+                console.error('검색 중 오류 발생:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                alert('검색 중 오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 검색 결과 표시
+        function displayResults(results) {
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = `result-card type-${result.type}`;
+                card.onclick = () => {
+                    window.location.href = result.url;
+                };
+
+                const dateStr = result.date ? new Date(result.date).toLocaleDateString('ko-KR') : '날짜 없음';
+
+                card.innerHTML = `
+                    <span class="result-type-badge badge-${result.type}">${result.type}</span>
+                    <div class="result-title">${escapeHtml(result.title)}</div>
+                    <div class="result-description">${escapeHtml(result.description)}</div>
+                    <div class="result-metadata">
+                        <span>📅 ${dateStr}</span>
+                        <span>ℹ️ ${escapeHtml(result.metadata)}</span>
+                    </div>
+                `;
+
+                resultsList.appendChild(card);
+            });
+        }
+
+        // HTML 이스케이프 (XSS 방지)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

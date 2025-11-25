@@ -215,14 +215,23 @@ public class ProjectWebController {
     // 초대(데이터 변경)는 리다이렉트(PRG) 패턴을 유지하는 것이 좋습니다.
     @PostMapping("/projects/invite")
     public String inviteMember(@RequestParam Long projectId,
-                               @RequestParam String userIdToInvite,
-                               RedirectAttributes redirectAttributes) { // ⭐️ 여긴 RedirectAttributes 유지
+                               @RequestParam String userIdToInvite, // ⭐️ HTML의 name="userIdToInvite"와 철자가 정확히 같아야 함
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+
+        String inviterId = getUserId(session); // 요청한 사람 (로그인한 사람)
 
         try {
-            projectService.inviteMember(projectId, userIdToInvite);
+            // Service 호출 (초대하는 사람 ID, 초대받을 사람 ID 전달)
+            projectService.inviteMember(projectId, inviterId, userIdToInvite);
+
             redirectAttributes.addFlashAttribute("inviteSuccess", "'" + userIdToInvite + "' 님을 성공적으로 초대했습니다.");
 
         } catch (IllegalArgumentException e) {
+            // 사용자 없음, 이미 멤버임 등
+            redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
+        } catch (SecurityException e) {
+            // ⭐️ 권한 없음 (소유자가 아님) -> 이 메시지가 토스트로 떠야 함
             redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
         }
 

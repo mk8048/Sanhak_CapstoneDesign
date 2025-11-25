@@ -13,7 +13,8 @@ public class ChatService {
     private final ChatRepository chatRepository;
 
     public ChatMessage recordChat(ChatRequestDto requestDto) {
-        ChatMessage message = new ChatMessage(requestDto.getContent(), requestDto.getWriter());
+        ChatMessage message = new ChatMessage(requestDto.getContent(), requestDto.getWriter(),
+                requestDto.getProfileImageUrl());
         return chatRepository.save(message);
     }
 

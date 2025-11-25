@@ -32,3 +32,15 @@ public class GanttTaskController {
         return "ganttTask/gantt-test";
     }
 }
+
+// Separate controller for page routing (not API)
+@Controller
+@RequestMapping("/gantt")
+@RequiredArgsConstructor
+class GanttPageController {
+
+    @GetMapping("/test")
+    public String ganttTestPage() {
+        return "ganttTask/gantt-test";
+    }
+}

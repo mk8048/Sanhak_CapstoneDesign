@@ -214,7 +214,7 @@ public class GithubService {
                 .queryParam("q", keyword)
                 .queryParam("sort", "stars")
                 .queryParam("order", "desc")
-                .queryParam("per_page", 10); // 상위 10개만 추천
+                .queryParam("per_page", 20); // 상위 10개만 추천
 
         try {
             GithubSearchResponse body = rt.getForObject(ub.toUriString(), GithubSearchResponse.class);

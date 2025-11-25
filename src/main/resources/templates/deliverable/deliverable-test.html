@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>산출물 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Notion-style Tab Navigation */
+        .tab-sidebar {
+            width: 250px;
+            background-color: #f7f6f3;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .tab-sidebar h2 {
+            padding: 0 20px 15px;
+            font-size: 14px;
+            color: #9b9a97;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-item {
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: #37352f;
+        }
+
+        .tab-item:hover {
+            background-color: #ebebea;
+        }
+
+        .tab-item.active {
+            background-color: #e3e2e0;
+            font-weight: 500;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px 30px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #create-result,
+        #deliverable-list {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        .success {
+            background-color: #e8f8f5;
+            color: #1e8449;
+            border: 1px solid #1e8449;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        .deliverable-item {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .deliverable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .deliverable-item h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .deliverable-meta {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .deliverable-description {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .file-link {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .file-link:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Notion-style Tab Sidebar -->
+    <div class="tab-sidebar">
+        <h2>산출물 카테고리</h2>
+        <div class="tab-item active" data-tab="all">
+            <span class="tab-icon">🏠</span>
+            <span>전체</span>
+        </div>
+        <div class="tab-item" data-tab="project">
+            <span class="tab-icon">🚪</span>
+            <span>Project Room</span>
+        </div>
+        <div class="tab-item" data-tab="outputs">
+            <span class="tab-icon">📦</span>
+            <span>Outputs</span>
+        </div>
+        <div class="tab-item" data-tab="gantt">
+            <span class="tab-icon">📊</span>
+            <span>Gantt Chart</span>
+        </div>
+        <div class="tab-item" data-tab="meeting">
+            <span class="tab-icon">📋</span>
+            <span>회의록</span>
+        </div>
+        <div class="tab-item" data-tab="memo">
+            <span class="tab-icon">📝</span>
+            <span>메모 대시보드</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>📦 산출물 관리</h1>
+
+        <div class="card">
+            <h2>➕ 새 산출물 등록</h2>
+            <form id="deliverable-form">
+                <div class="form-group">
+                    <label for="name">산출물 이름 *</label>
+                    <input type="text" id="name" placeholder="예: 캡스톤 중간발표 자료" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">설명</label>
+                    <textarea id="description" placeholder="산출물에 대한 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="fileUrl">파일 URL *</label>
+                    <input type="url" id="fileUrl" placeholder="https://drive.google.com/..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="uploader">업로더 *</label>
+                    <input type="text" id="uploader" placeholder="이름을 입력하세요" required>
+                </div>
+
+                <button type="submit">산출물 등록</button>
+                <div id="create-result"></div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 id="list-title">📚 전체 산출물</h2>
+            <div id="deliverable-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const deliverableListDiv = document.getElementById("deliverable-list");
+        const createResultDiv = document.getElementById("create-result");
+        const deliverableForm = document.getElementById("deliverable-form");
+        const listTitle = document.getElementById("list-title");
+        const tabItems = document.querySelectorAll(".tab-item");
+
+        let allDeliverables = [];
+        let currentTab = "all";
+
+        const tabTitles = {
+            all: "📚 전체 산출물",
+            project: "🚪 Project Room 산출물",
+            outputs: "📦 Outputs 산출물",
+            gantt: "📊 Gantt Chart 산출물",
+            meeting: "📋 회의록 산출물",
+            memo: "📝 메모 대시보드 산출물"
+        };
+
+        // Get tab from URL parameter
+        function getTabFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('tab') || 'all';
+        }
+
+        // Initialize tab from URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlTab = getTabFromUrl();
+            currentTab = urlTab;
+
+            // Set active tab
+            tabItems.forEach(tab => {
+                if (tab.dataset.tab === currentTab) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            listTitle.textContent = tabTitles[currentTab];
+            loadDeliverables();
+        });
+
+        // Tab switching
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabItems.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+                listTitle.textContent = tabTitles[currentTab];
+                displayDeliverables();
+            });
+        });
+
+        // Display deliverables based on current tab
+        function displayDeliverables() {
+            let filteredDeliverables = allDeliverables;
+
+            // For now, show all deliverables in all tabs
+            // In a real implementation, you would filter by category
+
+            if (filteredDeliverables.length === 0) {
+                deliverableListDiv.className = "error";
+                deliverableListDiv.textContent = "📭 등록된 산출물이 없습니다.";
+                return;
+            }
+
+            deliverableListDiv.className = "success";
+            deliverableListDiv.innerHTML = "";
+
+            filteredDeliverables.forEach(deliverable => {
+                const deliverableElement = document.createElement("div");
+                deliverableElement.className = "deliverable-item";
+
+                const uploadDate = deliverable.uploadDate
+                    ? new Date(deliverable.uploadDate).toLocaleDateString('ko-KR')
+                    : "날짜 미정";
+
+                deliverableElement.innerHTML = `
+          <div class="deliverable-header">
+            <div>
+              <h3>${deliverable.name}</h3>
+              <div class="deliverable-meta">
+                👤 ${deliverable.uploader} | 📅 ${uploadDate}
+              </div>
+            </div>
+          </div>
+          ${deliverable.description ? `<div class="deliverable-description">${deliverable.description}</div>` : ''}
+          <a href="${deliverable.fileUrl}" target="_blank" class="file-link">🔗 파일 열기</a>
+        `;
+                deliverableListDiv.appendChild(deliverableElement);
+            });
+        }
+
+        // Load deliverables from API
+        function loadDeliverables() {
+            deliverableListDiv.innerHTML = "⏳ 산출물을 불러오는 중...";
+
+            fetch('/api/deliverables')
+                .then(response => response.json())
+                .then(deliverables => {
+                    console.log("서버에서 받은 데이터:", deliverables);
+                    allDeliverables = deliverables;
+                    displayDeliverables();
+                })
+                .catch(error => {
+                    console.error("API 호출 중 오류 발생:", error);
+                    deliverableListDiv.className = "error";
+                    deliverableListDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+                });
+        }
+
+        // Handle form submission
+        deliverableForm.onsubmit = function (e) {
+            e.preventDefault();
+
+            const deliverableData = {
+                name: document.getElementById('name').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                fileUrl: document.getElementById('fileUrl').value.trim(),
+                uploader: document.getElementById('uploader').value.trim()
+            };
+
+            if (!deliverableData.name || !deliverableData.fileUrl || !deliverableData.uploader) {
+                createResultDiv.className = "error";
+                createResultDiv.textContent = "❌ 필수 항목을 모두 입력해주세요.";
+                return;
+            }
+
+            fetch("/api/deliverables", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(deliverableData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log("산출물 등록 성공");
+                        createResultDiv.className = "success";
+                        createResultDiv.textContent = "✅ 산출물이 성공적으로 등록되었습니다.";
+
+                        // Reset form
+                        deliverableForm.reset();
+
+                        // Reload deliverable list
+                        setTimeout(loadDeliverables, 500);
+                    } else {
+                        console.error("산출물 등록 실패");
+                        createResultDiv.className = "error";
+                        createResultDiv.textContent = "❌ 산출물 등록에 실패했습니다. (F12 콘솔 확인)";
+                    }
+                })
+                .catch(error => {
+                    console.error("API 호출 중 오류 발생:", error);
+                    createResultDiv.className = "error";
+                    createResultDiv.textContent = "❌ API 호출 오류. (F12 콘솔 확인)";
+                });
+        };
+    </script>
+
+</body>
+
+</html>

@@ -21,10 +21,11 @@
             background-color: #f0f2f5;
         }
 
-        /* 전체 레이아웃 컨테이너 */
-        .container {
+        .app-container {
             display: flex;
             height: 100vh;
+            width: 100%;
+            /* 전체 너비 사용 */
         }
 
         /* --- 사이드바 (sidebar.html에서 가져올 부분의 스타일) --- */
@@ -54,7 +55,7 @@
             font-size: 1.1em;
         }
 
-        /*액션 버튼 컨테이너 (마이페이지/로그아웃) */
+        /* 액션 버튼 컨테이너 (마이페이지/로그아웃) */
         .profile-actions {
             display: flex;
             justify-content: space-between;
@@ -105,9 +106,48 @@
 
         .sidebar .nav-menu a {
             text-decoration: none;
-            /* 밑줄 제거 */
             color: inherit;
-            /* 부모(li)의 색상을 상속 (방문 시 보라색 방지) */
+        }
+
+        /* --- 서브메뉴 스타일 --- */
+        .submenu {
+            display: none;
+            padding-left: 35px;
+            list-style: none;
+            /* 리스트 스타일 제거 */
+        }
+
+        .submenu.active {
+            display: block;
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .menu-toggle .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 5px;
+        }
+
+        .menu-toggle.expanded .arrow {
+            transform: rotate(90deg);
+        }
+
+        .submenu li {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+
+        .submenu li a {
+            color: #555;
+            text-decoration: none;
+        }
+
+        .submenu li a:hover {
+            color: #3498db;
         }
 
         /* --- 메인 콘텐츠 --- */
@@ -149,6 +189,15 @@
             font-size: 1em;
         }
 
+        /* (이슈 해결) id 추가 */
+        #searchQuery {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 1em;
+        }
+
         header .search-bar .search-icon {
             position: absolute;
             right: 15px;
@@ -167,7 +216,6 @@
         /* --- 알림 아이콘 및 드롭다운 스타일 --- */
         .notification-container {
             margin-left: auto;
-            /* 헤더 우측으로 정렬 */
             position: relative;
             display: flex;
             align-items: center;
@@ -191,14 +239,12 @@
             font-size: 0.6em;
             font-weight: bold;
             display: none;
-            /* 알림이 있을 때만 표시 (JS로 제어 가능) */
         }
 
         .notification-dropdown {
             display: none;
             position: absolute;
             top: 50px;
-            /* 아이콘 아래 위치 */
             right: 0;
             width: 320px;
             background-color: #ffffff;
@@ -264,26 +310,23 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="app-container">
         <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
 
         <div class="main-content">
             <header>
                 <div class="title" th:text="${pageTitle ?: '캡스톤디자인 I'}">캡스톤디자인 I</div>
                 <div class="search-bar">
-                    <input type="text" placeholder="검색">
+                    <input type="text" name="query" id="searchQuery" placeholder="검색">
                     <span class="search-icon">🔍</span>
                 </div>
 
-                <!-- 알림 아이콘 및 드롭다운 -->
                 <div class="notification-container">
                     <div class="notification-icon" onclick="toggleNotification()">
                         🔔
-                        <span class="notification-badge"
-                              id="notificationBadge"
-                              th:if="${unreadCount != null and unreadCount > 0}"
-                              th:text="${unreadCount}"
-                              style="display: inline-block;">
+                        <span class="notification-badge" id="notificationBadge"
+                            th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount}"
+                            style="display: inline-block;">
                         </span>
                     </div>
 
@@ -298,15 +341,12 @@
                                 새로운 알림이 없습니다.
                             </div>
 
-                            <div class="notification-item"
-                                 th:each="noti : ${globalNotifications}"
-                                 <th:onclick="|location.href='@{${noti.relatedUrl}}'|"
-                                 style="cursor: pointer;">
+                            <div class="notification-item" th:each="noti : ${globalNotifications}"
+                                th:onclick="|location.href='@{${noti.relatedUrl}}'|" style="cursor: pointer;">
 
                                 <div th:text="${noti.message}">새로운 알림입니다.</div>
 
-                                <span class="time"
-                                      th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">
+                                <span class="time" th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">
                                     2025-11-20 12:00
                                 </span>
                             </div>
@@ -337,6 +377,16 @@
                         openDropdown.classList.remove('active');
                     }
                 }
+            }
+        }
+
+        // 사이드바 서브메뉴 토글 함수
+        function toggleSubmenu(element) {
+            element.classList.toggle('expanded');
+            // 클릭된 li의 바로 다음 형제 요소(ul.submenu)를 찾음
+            const submenu = element.nextElementSibling;
+            if (submenu && submenu.classList.contains('submenu')) {
+                submenu.classList.toggle('active');
             }
         }
     </script>

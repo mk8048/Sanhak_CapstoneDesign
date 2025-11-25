@@ -1,69 +1,258 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
     <title>오픈소스 프로젝트 추천</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        /* --- 1. 레이아웃 및 컨테이너 --- */
+        .recommend-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            color: #333;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .header-desc {
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        /* --- 2. 검색 폼 스타일 --- */
+        .search-wrapper {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            border: none;
+            padding: 12px 15px;
+            font-size: 1rem;
+            outline: none;
+            border-radius: 8px;
+        }
+
+        .search-btn {
+            background-color: #0d6efd; /* 파란색 */
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background-color: #0b5ed7;
+        }
+
+        /* --- 3. 결과 그리드 (2열 배치) --- */
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2열 고정 */
+            gap: 25px;
+        }
+
+        /* 화면이 작아지면 1열로 변경 (반응형) */
+        @media (max-width: 768px) {
+            .repo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- 4. 카드 디자인 --- */
+        .repo-card {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* 카드 높이 맞춤 */
+            box-sizing: border-box;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #b0c4de;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .repo-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 0;
+            word-break: break-all; /* 긴 단어 줄바꿈 */
+        }
+
+        .repo-fullname {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .repo-desc {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1; /* 내용이 적어도 하단 요소를 바닥으로 밀어냄 */
+        }
+
+        /* --- 5. 배지 및 버튼 --- */
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .badge-star {
+            background-color: #ffc107; /* 노란색 */
+            color: #212529;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-lang {
+            background-color: #e9ecef; /* 회색 */
+            color: #495057;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-github {
+            text-decoration: none;
+            color: #0d6efd;
+            border: 1px solid #0d6efd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-github:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        /* 결과 없음 알림 */
+        .no-result {
+            grid-column: 1 / -1; /* 전체 열 차지 */
+            text-align: center;
+            padding: 40px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
-    <div class="text-center mb-5">
-        <h1 class="fw-bold">💡 관련 오픈소스 프로젝트 추천</h1>
-        <p class="text-muted">진행 중인 프로젝트와 유사한 우수 사례를 참고하여 퀄리티를 높여보세요.</p>
-    </div>
+<div layout:fragment="content">
 
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <form action="/github/commits/recommend" method="get" class="input-group input-group-lg shadow-sm">
-                <input type="text" name="keyword" class="form-control"
+    <div class="recommend-container">
+
+        <div class="header-section">
+            <h1 class="header-title">💡 관련 오픈소스 프로젝트 추천</h1>
+            <p class="header-desc">진행 중인 프로젝트와 유사한 우수 사례를 참고하여 퀄리티를 높여보세요.</p>
+
+            <form th:action="@{/github/commits/recommend}" method="get" class="search-wrapper">
+                <input type="text" name="keyword" class="search-input"
                        th:value="${keyword}" placeholder="검색 키워드 (예: Spring Boot LMS, Todo List)">
-                <button class="btn btn-primary px-4" type="submit">
+                <button class="search-btn" type="submit">
                     <i class="bi bi-search"></i> 검색
                 </button>
             </form>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12" th:if="${#lists.isEmpty(repos)}">
-            <div class="alert alert-warning text-center">
+        <div class="repo-grid">
+
+            <div class="no-result" th:if="${#lists.isEmpty(repos)}">
                 검색 결과가 없습니다. 키워드를 변경해보세요.
             </div>
-        </div>
 
-        <div class="col-md-6 mb-4" th:each="repo : ${repos}">
-            <div class="card h-100 shadow-sm border-0 hover-shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title fw-bold text-primary">
-                            <i class="bi bi-journal-bookmark-fill me-2"></i>
-                            <span th:text="${repo.name}">Project Name</span>
-                        </h5>
-                        <span class="badge bg-warning text-dark">
-                            <i class="bi bi-star-fill"></i>
-                            <span th:text="${repo.stargazers_count}">100</span>
-                        </span>
-                    </div>
+            <div class="repo-card" th:each="repo : ${repos}">
 
-                    <h6 class="card-subtitle mb-3 text-muted" th:text="${repo.full_name}">owner/repo</h6>
+                <div class="card-header">
+                    <h5 class="repo-name">
+                        <i class="bi bi-journal-bookmark-fill me-2"></i>
+                        <span th:text="${repo.name}">Project Name</span>
+                    </h5>
+                    <span class="badge-star">
+                        <i class="bi bi-star-fill"></i>
+                        <span th:text="${repo.stargazers_count}">100</span>
+                    </span>
+                </div>
 
-                    <p class="card-text text-secondary"
-                       th:text="${#strings.abbreviate(repo.description, 100)} ?: '설명이 없습니다.'">
-                        프로젝트 설명...
-                    </p>
+                <div class="repo-fullname" th:text="${repo.full_name}">owner/repo</div>
 
-                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                        <span class="badge bg-secondary" th:if="${repo.language}" th:text="${repo.language}">Java</span>
-                        <a th:href="${repo.html_url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            GitHub 바로가기 <i class="bi bi-box-arrow-up-right ms-1"></i>
-                        </a>
-                    </div>
+                <p class="repo-desc"
+                   th:text="${repo.description != null ? #strings.abbreviate(repo.description, 100) : '설명이 없습니다.'}">
+                    프로젝트 설명...
+                </p>
+
+                <div class="card-footer">
+                    <span class="badge-lang" th:if="${repo.language}" th:text="${repo.language}">Java</span>
+                    <span class="badge-lang" th:unless="${repo.language}">Unknown</span>
+
+                    <a th:href="${repo.html_url}" target="_blank" class="btn-github">
+                        GitHub 바로가기 <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
+
+        </div> </div>
 </div>
 
 </body>

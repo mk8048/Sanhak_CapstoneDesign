@@ -1,120 +1,175 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <title>GanttTask API 테스트</title>
-    <style>
-        body {
-          font-family: "Noto Sans KR", sans-serif;
-          background-color: #f4f6f9;
-          margin: 0;
-          padding: 40px;
-          color: #333;
-        }
+  <meta charset="UTF-8">
+  <title>GanttTask API 테스트</title>
+  <style>
+    body {
+      font-family: "Noto Sans KR", sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 40px;
+      color: #333;
+    }
 
-        h1 {
-          text-align: center;
-          color: #2c3e50;
-          margin-bottom: 40px;
-        }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
 
-        h2 {
-          color: #34495e;
-          border-left: 5px solid #3498db;
-          padding-left: 10px;
-          margin-bottom: 15px;
-        }
+    h2 {
+      color: #34495e;
+      border-left: 5px solid #3498db;
+      padding-left: 10px;
+      margin-bottom: 15px;
+    }
 
-        .card {
-          background: white;
-          border-radius: 10px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          padding: 25px 30px;
-          margin-bottom: 40px;
-          transition: transform 0.2s ease;
-        }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 25px 30px;
+      margin-bottom: 40px;
+      transition: transform 0.2s ease;
+    }
 
-        .card:hover {
-          transform: translateY(-3px);
-        }
+    .card:hover {
+      transform: translateY(-3px);
+    }
 
-        button {
-          background-color: #3498db;
-          color: white;
-          font-size: 16px;
-          padding: 10px 20px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
+    button {
+      background-color: #3498db;
+      color: white;
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
 
-        button:hover {
-          background-color: #2980b9;
-        }
+    button:hover {
+      background-color: #2980b9;
+    }
 
-        #create-result, #task-list-result {
-          margin-top: 15px;
-          padding: 15px;
-          border-radius: 6px;
-          font-size: 15px;
-          line-height: 1.5;
-          background-color: #f8f9fa;
-          white-space: pre-line;
-        }
+    #create-result,
+    #task-list-result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 15px;
+      line-height: 1.5;
+      background-color: #f8f9fa;
+      white-space: pre-line;
+    }
 
-        .success {
-          background-color: #e8f8f5;
-          color: #1e8449;
-          border: 1px solid #1e8449;
-        }
+    .success {
+      background-color: #e8f8f5;
+      color: #1e8449;
+      border: 1px solid #1e8449;
+    }
 
-        .error {
-          background-color: #fdecea;
-          color: #c0392b;
-          border: 1px solid #c0392b;
-        }
+    .error {
+      background-color: #fdecea;
+      color: #c0392b;
+      border: 1px solid #c0392b;
+    }
 
-        .task-item {
-          background-color: #f0f3f6;
-          padding: 10px 12px;
-          border-radius: 6px;
-          margin-bottom: 8px;
-        }
+    .task-item {
+      background-color: #f0f3f6;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
 
-        hr {
-          border: none;
-          height: 1px;
-          background: #ddd;
-          margin: 40px 0;
-        }
-    </style>
+    hr {
+      border: none;
+      height: 1px;
+      background: #ddd;
+      margin: 40px 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>🗂️ GanttTask API 테스트 페이지</h1>
+  <h1>🗂️ GanttTask API 테스트 페이지</h1>
 
-<div class="card">
-    <h2>작업 등록 (POST)</h2>
+  <div class="card">
+    <h2>📊 현재 진행 중인 작업 목록</h2>
+    <div id="task-list-result"></div>
+  </div>
+
+  <hr>
+
+  <div class="card">
+    <h2>➕ 작업 등록 (테스트용)</h2>
     <button id="create-btn">테스트 작업 1개 등록하기</button>
     <div id="create-result"></div>
-</div>
+  </div>
 
-<div class="card">
-    <h2>작업 목록 조회 (GET)</h2>
-    <button id="read-btn">1번 프로젝트 작업 목록 조회하기</button>
-    <div id="task-list-result"></div>
-</div>
-
-<script>
+  <script>
     const projectId = 1;
 
     const createBtn = document.getElementById("create-btn");
-    const readBtn = document.getElementById("read-btn");
     const createResultDiv = document.getElementById("create-result");
     const readResultDiv = document.getElementById("task-list-result");
 
-    createBtn.onclick = function() {
+    // Auto-load task list on page load
+    function loadTaskList() {
+      readResultDiv.innerHTML = "⏳ 작업 목록을 불러오는 중...";
+
+      fetch(`/api/gantt/project/${projectId}`)
+        .then(response => response.json())
+        .then(tasks => {
+          console.log("서버에서 받은 데이터:", tasks);
+
+          if (tasks.length === 0) {
+            readResultDiv.className = "error";
+            readResultDiv.textContent = "📭 등록된 작업이 없습니다.";
+            return;
+          }
+
+          readResultDiv.className = "success";
+          readResultDiv.innerHTML = "";
+
+          tasks.forEach(task => {
+            const taskElement = document.createElement("div");
+            taskElement.className = "task-item";
+
+            // D-day 표시 스타일링
+            const dDayText = task.daysRemaining >= 0
+              ? `D-${task.daysRemaining}`
+              : `D+${Math.abs(task.daysRemaining)}`;
+
+            const dDayColor = task.daysRemaining < 0
+              ? '#c0392b'
+              : task.daysRemaining <= 3
+                ? '#e67e22'
+                : '#27ae60';
+
+            taskElement.innerHTML = `
+              <strong>${task.name}</strong><br>
+              <span style="color: ${dDayColor}; font-weight: bold; font-size: 16px;">${dDayText}일 남음</span> | 
+              진행률: ${task.progress}% | 
+              기간: ${task.startDate} ~ ${task.endDate}
+            `;
+            readResultDiv.appendChild(taskElement);
+          });
+        })
+        .catch(error => {
+          console.error("API 호출 중 오류 발생:", error);
+          readResultDiv.className = "error";
+          readResultDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+        });
+    }
+
+    // Load tasks when page loads
+    window.addEventListener('DOMContentLoaded', loadTaskList);
+
+    createBtn.onclick = function () {
       const testTaskData = {
         projectId: projectId,
         name: "새로운 테스트 작업",
@@ -131,53 +186,27 @@
         },
         body: JSON.stringify(testTaskData)
       })
-      .then(response => {
-        if (response.ok) {
-          console.log("작업 등록 성공");
-          createResultDiv.className = "success";
-          createResultDiv.textContent = "✅ '새로운 테스트 작업'이 성공적으로 등록되었습니다.";
-        } else {
-          console.error("작업 등록 실패");
-          createResultDiv.className = "error";
-          createResultDiv.textContent = "❌ 작업 등록에 실패했습니다. (F12 콘솔 확인)";
-        }
-      })
-      .catch(error => {
-        console.error("API 호출 중 오류 발생:", error);
-        createResultDiv.className = "error";
-        createResultDiv.textContent = "❌ API 호출 오류. (F12 콘솔 확인)";
-      });
-    };
-
-    readBtn.onclick = function() {
-      readResultDiv.innerHTML = "";
-
-      fetch(`/api/gantt/project/${projectId}`)
-        .then(response => response.json())
-        .then(tasks => {
-          console.log("서버에서 받은 데이터:", tasks);
-
-          if (tasks.length === 0) {
-            readResultDiv.className = "error";
-            readResultDiv.textContent = "데이터가 없습니다. (등록 버튼을 먼저 눌러주세요)";
-            return;
+        .then(response => {
+          if (response.ok) {
+            console.log("작업 등록 성공");
+            createResultDiv.className = "success";
+            createResultDiv.textContent = "✅ '새로운 테스트 작업'이 성공적으로 등록되었습니다.";
+            // Reload task list after creating new task
+            setTimeout(loadTaskList, 500);
+          } else {
+            console.error("작업 등록 실패");
+            createResultDiv.className = "error";
+            createResultDiv.textContent = "❌ 작업 등록에 실패했습니다. (F12 콘솔 확인)";
           }
-
-          readResultDiv.className = "success";
-          tasks.forEach(task => {
-            const taskElement = document.createElement("div");
-            taskElement.className = "task-item";
-            taskElement.textContent = `작업명: ${task.name} | D-day: ${task.daysRemaining}일 | 진행률: ${task.progress}%`;
-            readResultDiv.appendChild(taskElement);
-          });
         })
         .catch(error => {
           console.error("API 호출 중 오류 발생:", error);
-          readResultDiv.className = "error";
-          readResultDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+          createResultDiv.className = "error";
+          createResultDiv.textContent = "❌ API 호출 오류. (F12 콘솔 확인)";
         });
     };
-</script>
+  </script>
 
 </body>
+
 </html>

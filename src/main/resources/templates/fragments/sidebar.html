@@ -1,57 +1,126 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-<!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
-<nav class="sidebar" th:fragment="sidebarFragment">
-    <div class="profile-area">
-        <div class="profile-info" style="font-weight: bold; font-size: 1.1em;">
-            <span class="icon">👤</span> <span th:text="${displayName}"></span>
-        </div>
-        <div class="profile-actions">
-            <a th:href="@{/user/mypage}" class="action-link">마이 페이지</a>
 
-            <form th:action="@{/user/logout}" method="POST" class="logout-form">
-                <button type="submit" class="logout-btn">로그아웃</button>
-            </form>
+<body>
+    <!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
+    <nav class="sidebar" th:fragment="sidebarFragment">
+        <div class="profile-area">
+            <div class="profile-info" style="font-weight: bold; font-size: 1.1em;">
+                <span class="icon">👤</span> <span th:text="${displayName}"></span>
+            </div>
+            <div class="profile-actions">
+                <a th:href="@{/user/mypage}" class="action-link">마이 페이지</a>
+
+                <form th:action="@{/user/logout}" method="POST" class="logout-form">
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+            </div>
         </div>
-    </div>
-    <ul class="nav-menu">
-        <li class="active">
-            <a th:href="${currentProjectId != null} ? @{/projects/{id}/main(id=${currentProjectId})} : @{/projects}">
-                <span class="icon" style="margin-right: 15px;">🏠</span> Home
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
-        <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
-        <li>
-            <a th:href="@{'/tasks'}">
-                <span class="icon" style="margin-right: 15px;">📅</span> Tasks
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits'}">
-                <span class="icon" style="margin-right: 15px;">📝</span> Github Commit
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits/chart'}">
-                <span class="icon" style="margin-right: 15px;">📤</span> Github Chart
-            </a>
-        </li>
-        <li>
-            <a th:href="@{'/github/commits/recommend'}">
-                <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
-        <li><span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart</li>
-        <li>
-            <a th:href="@{'/projects/' + ${currentProjectId} + '/members'}">
-                <span class="icon" style="margin-right: 15px;">👥</span> Members
-            </a>
-        </li>
-        <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
-    </ul>
-</nav>
+        <ul class="nav-menu">
+            <li class="active">
+                <a
+                    th:href="${currentProjectId != null} ? @{/projects/{id}/main(id=${currentProjectId})} : @{/projects}">
+                    <span class="icon" style="margin-right: 15px;">🏠</span> Home
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/search'}">
+                    <span class="icon" style="margin-right: 15px;">🔍</span> 검색
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
+            <li><span class="icon" style="margin-right: 15px;">📢</span> Notice</li>
+            <li>
+                <a th:href="@{'/tasks'}">
+                    <span class="icon" style="margin-right: 15px;">📅</span> Tasks
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits'}">
+                    <span class="icon" style="margin-right: 15px;">📝</span> Github Commit
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits/chart'}">
+                    <span class="icon" style="margin-right: 15px;">📤</span> Github Chart
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/github/commits/recommend'}">
+                    <span class="icon" style="margin-right: 15px;">❗</span> Github Recommend
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">🗒️</span> Note</li>
+
+            <!-- 산출물 with expandable submenu -->
+            <li class="menu-toggle" onclick="toggleSubmenu(this)">
+                <span class="arrow">▶</span>
+                <span class="icon" style="margin-right: 15px;">📦</span> 산출물
+            </li>
+            <!-- Submenu is now a sibling of the toggle li, but semantically it should be inside or handled by JS. 
+                 Current JS expects it to be next sibling. 
+                 To make it valid HTML, it should be inside a li, but the current CSS/JS structure relies on this flat structure.
+                 Given the constraints and previous code, keeping it as next sibling is the least risky change for functionality,
+                 although technically invalid HTML (ul inside ul). 
+                 However, the user asked to fix the "weird" look. 
+                 Let's keep the structure compatible with the JS I just moved to layout.html: element.nextElementSibling.
+            -->
+            <ul class="submenu">
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=all'}">
+                        <span class="icon" style="margin-right: 10px;">🏠</span> Home
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=project'}">
+                        <span class="icon" style="margin-right: 10px;">🚪</span> Project Room
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=outputs'}">
+                        <span class="icon" style="margin-right: 10px;">📦</span> Outputs
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=gantt'}">
+                        <span class="icon" style="margin-right: 10px;">📊</span> Gantt Chart
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=meeting'}">
+                        <span class="icon" style="margin-right: 10px;">📋</span> 회의록
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{'/deliverable/test?tab=memo'}">
+                        <span class="icon" style="margin-right: 10px;">📝</span> 메모 대시보드
+                    </a>
+                </li>
+            </ul>
+
+            <li>
+                <a th:href="@{'/template/test'}">
+                    <span class="icon" style="margin-right: 15px;">📄</span> 양식 제공
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/meeting/test'}">
+                    <span class="icon" style="margin-right: 15px;">📋</span> 회의록
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/gantt/test'}">
+                    <span class="icon" style="margin-right: 15px;">📊</span> Gantt Chart
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/projects/' + ${currentProjectId} + '/members'}">
+                    <span class="icon" style="margin-right: 15px;">👥</span> Members
+                </a>
+            </li>
+            <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
+        </ul>
+    </nav>
 </body>
+
 </html>

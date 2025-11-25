@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>양식 제공</title>
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px 30px;
+            margin-bottom: 40px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            background-color: white;
+        }
+
+        .filter-item select {
+            cursor: pointer;
+        }
+
+        #template-list-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        .success {
+            background-color: #e8f8f5;
+            color: #1e8449;
+            border: 1px solid #1e8449;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        .template-item {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .template-title-section {
+            flex: 1;
+        }
+
+        .template-item h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .action-btn.secondary {
+            background-color: #95a5a6;
+        }
+
+        .action-btn.secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .template-content {
+            color: #34495e;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .template-content.collapsed {
+            max-height: 150px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .template-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(transparent, #f8f9fa);
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+            padding: 5px 0;
+            text-decoration: underline;
+        }
+
+        .expand-btn:hover {
+            color: #2980b9;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #ddd;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📄 양식 제공</h1>
+
+    <div class="card">
+        <h2>🔍 양식 검색 및 필터</h2>
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="category-filter">카테고리</label>
+                <select id="category-filter">
+                    <option value="">전체</option>
+                    <option value="README">README</option>
+                    <option value="ISSUE">ISSUE</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="search-input">검색</label>
+                <input type="text" id="search-input" placeholder="제목 또는 내용 검색...">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📚 양식 목록</h2>
+        <div id="template-list-result"></div>
+    </div>
+
+    <div id="copy-notification" class="copy-notification">✅ 클립보드에 복사되었습니다!</div>
+
+    <script>
+        const templateListDiv = document.getElementById("template-list-result");
+        const categoryFilter = document.getElementById("category-filter");
+        const searchInput = document.getElementById("search-input");
+        const copyNotification = document.getElementById("copy-notification");
+
+        let allTemplates = [];
+
+        // Copy to clipboard function
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show notification
+                copyNotification.classList.add('show');
+                setTimeout(() => {
+                    copyNotification.classList.remove('show');
+                }, 2000);
+
+                // Change button text temporarily
+                const originalText = button.innerHTML;
+                button.innerHTML = '✓ 복사됨';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('복사 실패:', err);
+                alert('복사에 실패했습니다.');
+            });
+        }
+
+        // Download as text file
+        function downloadTemplate(title, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Toggle content expansion
+        function toggleContent(contentDiv, button) {
+            contentDiv.classList.toggle('collapsed');
+            if (contentDiv.classList.contains('collapsed')) {
+                button.textContent = '▼ 전체 보기';
+            } else {
+                button.textContent = '▲ 접기';
+            }
+        }
+
+        // Filter and display templates
+        function displayTemplates() {
+            const category = categoryFilter.value;
+            const searchTerm = searchInput.value.toLowerCase();
+
+            let filteredTemplates = allTemplates;
+
+            // Filter by category
+            if (category) {
+                filteredTemplates = filteredTemplates.filter(t => t.category === category);
+            }
+
+            // Filter by search term
+            if (searchTerm) {
+                filteredTemplates = filteredTemplates.filter(t =>
+                    t.title.toLowerCase().includes(searchTerm) ||
+                    t.content.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (filteredTemplates.length === 0) {
+                templateListDiv.className = "error";
+                templateListDiv.textContent = "📭 검색 결과가 없습니다.";
+                return;
+            }
+
+            templateListDiv.className = "success";
+            templateListDiv.innerHTML = "";
+
+            filteredTemplates.forEach(template => {
+                const templateElement = document.createElement("div");
+                templateElement.className = "template-item";
+
+                const contentId = `content-${template.id}`;
+                const isLongContent = template.content.length > 300;
+
+                templateElement.innerHTML = `
+          <div class="template-header">
+            <div class="template-title-section">
+              <span class="category-badge">${template.category}</span>
+              <h3>${template.title}</h3>
+            </div>
+            <div class="template-actions">
+              <button class="action-btn" onclick="copyToClipboard(\`${template.content.replace(/`/g, '\\`')}\`, this)">
+                📋 복사
+              </button>
+              <button class="action-btn secondary" onclick="downloadTemplate('${template.title}', \`${template.content.replace(/`/g, '\\`')}\`)">
+                💾 다운로드
+              </button>
+            </div>
+          </div>
+          <div id="${contentId}" class="template-content ${isLongContent ? 'collapsed' : ''}">${template.content}</div>
+          ${isLongContent ? `<button class="expand-btn" onclick="toggleContent(document.getElementById('${contentId}'), this)">▼ 전체 보기</button>` : ''}
+        `;
+                templateListDiv.appendChild(templateElement);
+            });
+        }
+
+        // Load templates from API
+        function loadTemplates() {
+            templateListDiv.innerHTML = "⏳ 양식을 불러오는 중...";
+
+            fetch('/api/templates')
+                .then(response => response.json())
+                .then(templates => {
+                    console.log("서버에서 받은 데이터:", templates);
+                    allTemplates = templates;
+                    displayTemplates();
+                })
+                .catch(error => {
+                    console.error("API 호출 중 오류 발생:", error);
+                    templateListDiv.className = "error";
+                    templateListDiv.textContent = "❌ 데이터를 불러오는 데 실패했습니다. (F12 콘솔 확인)";
+                });
+        }
+
+        // Load templates when page loads
+        window.addEventListener('DOMContentLoaded', loadTemplates);
+
+        // Filter when category or search changes
+        categoryFilter.addEventListener('change', displayTemplates);
+        searchInput.addEventListener('input', displayTemplates);
+    </script>
+
+</body>
+
+</html>

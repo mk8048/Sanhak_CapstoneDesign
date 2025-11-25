@@ -2,6 +2,9 @@ package com.example.capstone25_2.github;
 
 import com.example.capstone25_2.github.dto.GithubCommitDTO;
 import com.example.capstone25_2.github.dto.GithubRepoDTO;
+import com.example.capstone25_2.project.ProjectService; // ⭐️ ProjectService 추가
+import jakarta.servlet.http.HttpSession; // ⭐️ HttpSession 추가
+import lombok.RequiredArgsConstructor; // ⭐️ Lombok 생성자 주입 사용 권장
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,12 +19,37 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/github/commits")
+@RequiredArgsConstructor // ⭐️ final 필드 생성자 자동 주입
 public class GithubController {
 
     private final GithubService githubService;
+    private final ProjectService projectService; // ⭐️ 프로젝트 이름 조회를 위해 추가
 
-    public GithubController(GithubService githubService) {
-        this.githubService = githubService;
+    // ⭐️⭐️⭐️ [추가] 모든 요청 시 레이아웃 공통 데이터(사용자, 프로젝트) 주입 ⭐️⭐️⭐️
+    @ModelAttribute
+    public void addLayoutAttributes(HttpSession session, Model model) {
+        // 1. 사용자 이름/닉네임 처리 (displayName)
+        String userName = (String) session.getAttribute("userName");
+        String userNickname = (String) session.getAttribute("userNickname");
+
+        if (userName != null) {
+            String displayName = (userNickname != null && !userNickname.isEmpty()) ? userNickname : userName;
+            model.addAttribute("displayName", displayName);
+        }
+
+        // 2. 현재 선택된 프로젝트 정보 처리 (currentProjectId, pageTitle)
+        Long projectId = (Long) session.getAttribute("currentProjectId");
+        if (projectId != null) {
+            model.addAttribute("currentProjectId", projectId);
+
+            // 프로젝트 이름을 조회하여 헤더 타이틀로 설정
+            try {
+                String projectName = projectService.getProjectNameById(projectId);
+                model.addAttribute("pageTitle", projectName);
+            } catch (Exception e) {
+                // 프로젝트가 삭제되었거나 찾을 수 없는 경우 무시
+            }
+        }
     }
 
     // HTML 페이지
@@ -74,36 +102,30 @@ public class GithubController {
         final ZoneId KST = ZoneId.of("Asia/Seoul");
         final java.time.ZoneOffset UTC = java.time.ZoneOffset.UTC;
 
-        // [추가된 부분] 1. 파라미터가 없으면 '오늘 날짜'를 기본값으로 설정
         if ((since == null || since.isBlank()) && (until == null || until.isBlank())) {
-            String today = LocalDate.now(KST).toString(); // "2025-11-16" 형태
+            String today = LocalDate.now(KST).toString();
             since = today;
             until = today;
         }
-        // -------------------------------------------------------
 
-        // KST 하루 구간 → API 호출은 UTC로 변환
-        java.time.OffsetDateTime sinceUtc = null;            // KST 00:00 → UTC
-        java.time.OffsetDateTime untilUtcExclusive = null;   // 다음날 KST 00:00 → UTC (배타)
+        java.time.OffsetDateTime sinceUtc = null;
+        java.time.OffsetDateTime untilUtcExclusive = null;
 
-        // 화면/로그용 표시 범위
         String displaySince = since;
         String displayUntil = until;
 
         try {
             if (since != null && !since.isBlank()) {
-                var startKst = java.time.LocalDate.parse(since).atStartOfDay(KST); // yyyy-MM-dd 00:00:00 KST
+                var startKst = java.time.LocalDate.parse(since).atStartOfDay(KST);
                 sinceUtc = startKst.withZoneSameInstant(UTC).toOffsetDateTime();
             }
             if (until != null && !until.isBlank()) {
-                // until 날짜의 "다음날 00시"까지로 잡아야 해당 날짜의 23:59:59까지 포함됨
                 var endKstExclusive = java.time.LocalDate.parse(until)
                         .plusDays(1)
-                        .atStartOfDay(KST); // 다음날 00:00:00 KST (배타)
+                        .atStartOfDay(KST);
                 untilUtcExclusive = endKstExclusive.withZoneSameInstant(UTC).toOffsetDateTime();
             }
 
-            // 혹시 날짜가 꼬였을 경우 안전장치
             if (sinceUtc != null && untilUtcExclusive != null && sinceUtc.isAfter(untilUtcExclusive)) {
                 var tmp = sinceUtc;
                 sinceUtc = untilUtcExclusive.minusDays(1);
@@ -114,16 +136,12 @@ public class GithubController {
             System.out.println("날짜 파싱 오류: " + e.getMessage());
         }
 
-        System.out.println("📅 KST 표시범위: " + displaySince + " ~ " + displayUntil);
-        System.out.println("↳ API 호출범위(UTC): " + sinceUtc + " ~ " + untilUtcExclusive);
-
         List<GithubCommitDTO> commits = githubService.getCommits(
                 null, null, null,
                 sinceUtc, untilUtcExclusive,
                 100, 1
         );
 
-        // DTO 편의 메서드 사용 (이름 기준 그룹핑)
         Map<String, Long> countMap = commits.stream()
                 .filter(c -> c.getAuthorName() != null)
                 .collect(Collectors.groupingBy(
@@ -132,7 +150,6 @@ public class GithubController {
                 ));
 
         model.addAttribute("commitData", countMap);
-        // 여기서 모델에 값을 넣어주면, HTML의 <input type="date" value="${since}">에 자동으로 오늘 날짜가 뜸
         model.addAttribute("since", displaySince);
         model.addAttribute("until", displayUntil);
 
@@ -144,7 +161,6 @@ public class GithubController {
             @RequestParam(required = false) String keyword,
             Model model
     ) {
-        // 키워드가 없으면 기본값으로 "Spring Boot" 설정 (또는 빈 화면)
         String searchKeyword = (keyword != null) ? keyword : "Spring Boot Project";
 
         List<GithubRepoDTO> repos = githubService.searchOpenSourceProjects(searchKeyword);

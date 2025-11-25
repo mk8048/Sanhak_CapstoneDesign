@@ -3,6 +3,7 @@ package com.example.capstone25_2.meeting;
 import com.example.capstone25_2.meeting.dto.MeetingCreateRequestDto;
 import com.example.capstone25_2.meeting.dto.MeetingResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,5 +28,17 @@ public class MeetingController {
     @GetMapping("/{id}")
     public MeetingResponseDto getMeetingById(@PathVariable Long id) {
         return meetingService.getMeetingById(id);
+    }
+}
+
+// Separate controller for page routing (not API)
+@Controller
+@RequestMapping("/meeting")
+@RequiredArgsConstructor
+class MeetingPageController {
+
+    @GetMapping("/test")
+    public String meetingTestPage() {
+        return "meeting/meeting-test";
     }
 }
