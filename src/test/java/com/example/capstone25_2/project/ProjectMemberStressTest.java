@@ -68,7 +68,7 @@ class ProjectMemberStressTest {
         stopWatch.start();
 
         for (String memberId : memberIds) {
-            projectService.inviteMember(projectId, memberId);
+            projectService.inviteMember(projectId, ownerId, memberId);
         }
 
         stopWatch.stop();
