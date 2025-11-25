@@ -57,7 +57,7 @@ public class SearchService {
                     .title(p.getProjectName())
                     .description(truncate(p.getDescription(), 100))
                     .date(p.getCreatedAt())
-                    .metadata("멤버 수: " + p.getMemberIds().size())
+                    .metadata("멤버 수: " + p.getMembers().size())
                     .url("/project/" + p.getProjectId())
                     .build());
         }
