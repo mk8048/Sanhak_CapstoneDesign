@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Optional; // Optional import 추가
 
 @Service
 @RequiredArgsConstructor
@@ -22,120 +21,127 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
-    // Helper: 로그인 ID(String)를 User PK(Long)로 변환 (기존 유지)
+    // Helper: 로그인 ID(String)를 User PK(Long)로 변환
     private Long getUserPkId(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
         return user.getPk_id();
     }
 
-    // Helper: User PK(Long)를 User Login ID(String)로 변환 (기존 유지)
+    // Helper: User PK(Long)를 User Login ID(String)로 변환
     private String getLoginIdByUserPk(Long userPkId) {
-        // JpaRepository의 기본 findById(Long)을 사용하여 PK로 User 조회
         User user = userRepository.findById(userPkId)
                 .orElseThrow(() -> new IllegalStateException("프로젝트 소유자 정보를 찾을 수 없습니다."));
         return user.getId();
     }
 
-    // [MODIFIED] 프로젝트 목록 조회: memberIds 기준으로 변경
+    // ⭐️ [MODIFIED] 프로젝트 목록 조회: ProjectMember 엔티티 조회로 변경 ⭐️
     public List<ProjectResponse> findProjectsByUserId(String userId) {
-        Long userPkId = getUserPkId(userId);
-        List<Project> projects = projectRepository.findAllByMemberIdsContaining(userId);
+        // ProjectMember 엔티티를 통해 userId가 포함된 프로젝트 조회 (Repository 쿼리 변경 필요)
+        // findDistinctByMembers_UserId(String userId) 사용
+        List<Project> projects = projectRepository.findDistinctByMembers_UserId(userId);
 
         return projects.stream()
                 .map(project -> {
                     // 1. 소유자 로그인 ID 조회
                     String ownerLoginId = getLoginIdByUserPk(project.getUsersId());
 
-                    // 2. 모든 멤버 ID (Set<String>)를 가져옵니다.
-                    Set<String> memberSet = project.getMemberIds();
+                    // 2. 모든 멤버 ID 리스트 추출 (ProjectMember -> userId)
+                    List<String> memberIds = project.getMembers().stream()
+                            .map(ProjectMember::getUserId)
+                            .collect(Collectors.toList());
 
                     // 3. 정렬된 리스트 생성 (소유자 우선)
                     List<String> sortedMembers = new ArrayList<>();
-                    if (memberSet.contains(ownerLoginId)) {
-                        sortedMembers.add(ownerLoginId); // 1. 소유자 ID를 맨 앞에 추가
+                    if (memberIds.contains(ownerLoginId)) {
+                        sortedMembers.add(ownerLoginId);
                     }
 
-                    // 4. 소유자를 제외한 나머지 멤버 추가
-                    memberSet.stream()
+                    memberIds.stream()
                             .filter(id -> !id.equals(ownerLoginId))
-                            .sorted() // (알파벳 순 정렬)
+                            .sorted()
                             .forEach(sortedMembers::add);
 
-                    // 5. 쉼표(,)로 구분된 문자열로 변환
+                    // 4. 문자열 변환
                     String allMembers = String.join(", ", sortedMembers);
 
-                    // 6. 수정된 DTO 생성자 호출
+                    // 5. DTO 생성
                     return new ProjectResponse(project, ownerLoginId, allMembers);
                 })
                 .collect(Collectors.toList());
     }
 
-    // [MODIFIED] 접근 권한 확인: memberIds 기준으로 변경
-    @Transactional(readOnly = true)
+    // ⭐️ [MODIFIED] 접근 권한 확인: ProjectMember 엔티티 검사 ⭐️
     public boolean checkUserAccessById(String userId, Long projectId) {
-        // ID로 프로젝트 조회
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // Project의 memberIds Set에 현재 로그인한 사용자 ID가 포함되는지 확인
-        if (project.getMemberIds().contains(userId)) {
+        // 멤버 리스트에서 해당 userId가 있는지 확인
+        boolean isMember = project.getMembers().stream()
+                .anyMatch(m -> m.getUserId().equals(userId));
+
+        if (isMember) {
             return true;
         }
 
         throw new SecurityException("해당 프로젝트에 접근 권한이 없습니다.");
     }
 
-    // [MODIFIED] 프로젝트 생성: memberIds에 생성자 ID 추가
+    // ⭐️ [MODIFIED] 프로젝트 생성: 소유자를 MEMBER 역할로 추가 ⭐️
     @Transactional
     public Project save(String creatorId, AddProjectRequest request) {
         Long creatorPkId = getUserPkId(creatorId);
 
         Project newProject = Project.from(request);
 
-        // 1. 소유자 PK 설정
+        // 1. 소유자 PK 설정 (최고 관리자)
         newProject.setUsersId(creatorPkId);
 
-        // 2. 참여자 목록(memberIds)에 생성자 ID(String) 추가
-        newProject.addMember(creatorId);
+        // 2. 멤버 리스트에 생성자 추가 (기본 역할 MEMBER)
+        // (소유자도 프로젝트 멤버로 등록되어야 조회 등에 편리함)
+        newProject.addMember(creatorId, ProjectRole.MEMBER);
 
         return projectRepository.save(newProject);
     }
 
-    // [NEW] 프로젝트 탈퇴 로직 구현
+    // ⭐️ [MODIFIED] 프로젝트 탈퇴 로직 ⭐️
     @Transactional
     public void leaveProject(String userId, Long projectId) {
-        Long userPkId = getUserPkId(userId); // PK로 소유자 확인용
+        Long userPkId = getUserPkId(userId);
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("탈퇴할 프로젝트를 찾을 수 없습니다."));
 
-        if (!project.getMemberIds().contains(userId)) {
+        // 멤버인지 확인
+        boolean isMember = project.getMembers().stream()
+                .anyMatch(m -> m.getUserId().equals(userId));
+
+        if (!isMember) {
             throw new IllegalArgumentException("해당 프로젝트의 멤버가 아닙니다.");
         }
 
-        // 소유자(Owner)는 탈퇴 불가 (소유자 PK와 현재 사용자 PK 비교)
+        // 소유자는 탈퇴 불가
         if (project.getUsersId() != null && project.getUsersId().equals(userPkId)) {
-            throw new IllegalArgumentException("프로젝트 소유자는 탈퇴할 수 없습니다. 소유권을 위임하거나 프로젝트를 삭제하세요.");
+            throw new IllegalArgumentException("프로젝트 소유자는 탈퇴할 수 없습니다.");
         }
 
-        // 탈퇴 처리: Set에서 사용자 ID를 제거합니다.
+        // 탈퇴 처리 (ProjectMember 엔티티 제거)
         project.removeMember(userId);
-
-        // (저장하지 않아도 @Transactional에 의해 변경 내용이 DB에 반영됨)
     }
 
-
+    // [유지] 프로젝트 삭제
     @Transactional
     public void delete(long id) {
         projectRepository.deleteById(id);
     }
 
+    // [유지] 프로젝트 수정 (권한 체크 추가 가능)
     @Transactional
     public Project update(Long id, UpdateProjectRequest request) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("not found: " + id));
 
+        // (선택) 여기서 수정 권한 체크 로직 추가 가능
         project.update(request);
 
         return project;
@@ -145,30 +151,26 @@ public class ProjectService {
     public String getProjectNameById(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
-
         return project.getProjectName();
     }
 
+    // ⭐️ [MODIFIED] 프로젝트 멤버 조회: ProjectMember -> userId 추출 ⭐️
     @Transactional(readOnly = true)
     public List<User> getProjectMembers(Long projectId) {
-
-        // 1. Project Entity를 조회합니다. (memberIds Set을 가져오기 위해)
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // 2. 멤버들의 로그인 ID (String) Set을 가져옵니다.
-        Set<String> memberLoginIds = project.getMemberIds();
+        // ProjectMember 엔티티에서 userId(String) 목록 추출
+        Set<String> memberLoginIds = project.getMembers().stream()
+                .map(ProjectMember::getUserId)
+                .collect(Collectors.toSet());
 
         if (memberLoginIds.isEmpty()) {
-            return List.of(); // 멤버가 없으면 빈 리스트 반환
+            return List.of();
         }
 
-        // 3. UserRepository에 새 쿼리 메서드가 필요: List<User> findAllByIdIn(Collection<String> ids);
-        List<User> members = userRepository.findAllByIdIn(memberLoginIds);
-
-        // 임시로, Service가 User Repository를 통해 memberLoginIds에 해당하는 User 객체 목록을 반환한다고 가정하겠습니다.
-
-        return userRepository.findAllByIdIn(memberLoginIds); // 이 메서드가 UserRepository에 추가되어야 합니다.
+        // UserRepository에서 User 엔티티 리스트 조회
+        return userRepository.findAllByIdIn(memberLoginIds);
     }
 
     @Transactional(readOnly = true)
@@ -177,36 +179,46 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
     }
 
+    // ⭐️ [MODIFIED] 팀원 초대: 역할(MEMBER) 지정하여 추가 ⭐️
     @Transactional
-    public void inviteMember(Long projectId, String emailOrId) {
+    public void inviteMember(Long projectId, String inviterId, String emailOrId) { // ⭐️ inviterId 추가
 
-        // 1. 초대할 사용자 조회
-        // ID로 먼저 찾아보고, 없으면 Email로 찾습니다.
+        // 1. 프로젝트 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        // 2. ⭐️ [권한 체크] 초대하는 사람이 '소유자'인지 확인 ⭐️
+        Long inviterPk = getUserPkId(inviterId); // 로그인한 사람의 PK 조회
+
+        // 프로젝트 소유자(usersId)와 초대자(inviterPk)가 다르면 예외 발생
+        if (!project.getUsersId().equals(inviterPk)) {
+            throw new SecurityException("프로젝트 소유자만 멤버를 초대할 수 있습니다.");
+        }
+
+        // 3. 초대할 사용자 조회
         User userToInvite = userRepository.findById(emailOrId)
                 .orElseGet(() -> userRepository.findByEmail(emailOrId)
                         .orElseThrow(() -> new IllegalArgumentException("'" + emailOrId + "' 사용자를 찾을 수 없습니다.")));
 
-        // 2. 프로젝트 조회
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+        // 4. 이미 참여 중인지 확인 (기존 로직 수정: ProjectMember 리스트 확인)
+        boolean isAlreadyMember = project.getMembers().stream()
+                .anyMatch(m -> m.getUserId().equals(userToInvite.getId()));
 
-        // 3. 이미 참여 중인지 확인
-        if (project.getMemberIds().contains(userToInvite.getId())) {
+        if (isAlreadyMember) {
             throw new IllegalArgumentException("이미 참여 중인 멤버입니다.");
         }
 
-        // 4. 프로젝트의 memberIds Set에 사용자 로그인 ID(String) 추가
-        project.addMember(userToInvite.getId());
-
-        // (트랜잭션 종료 시 Dirty Checking으로 자동 저장됨)
+        // 5. 멤버 추가 (기본 역할 MEMBER)
+        project.addMember(userToInvite.getId(), ProjectRole.MEMBER);
     }
 
+    // ⭐️ [MODIFIED] 멤버 여부 확인 ⭐️
     @Transactional(readOnly = true)
     public boolean isUserInProject(String userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // Project 엔티티의 memberIds Set에 userId가 포함되어 있는지 확인
-        return project.getMemberIds().contains(userId);
+        return project.getMembers().stream()
+                .anyMatch(m -> m.getUserId().equals(userId));
     }
 }

@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Long > {
-    List<Project> findAllByOrderByCreatedAtDesc();
-    List<Project> findAllByMemberIdsContaining(String memberId);
-    Optional<Project> findByProjectNameAndMemberIdsContaining(String projectName, String memberId);
+public interface ProjectRepository extends JpaRepository<Project, Long> {
 
+    List<Project> findAllByOrderByCreatedAtDesc();
+    List<Project> findDistinctByMembers_UserId(String userId);
+    Optional<Project> findByProjectNameAndMembers_UserId(String projectName, String userId);
+    Optional<Project> findByProjectName(String projectName);
     List<Project> findByDeadline(LocalDate deadline);
 }
