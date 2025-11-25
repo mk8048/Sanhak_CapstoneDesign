@@ -4,9 +4,11 @@ import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.project.ProjectService;
 import com.example.capstone25_2.user.User;
 import com.example.capstone25_2.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.example.capstone25_2.project.Project;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,19 +17,15 @@ import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
-
     private final ProjectService projectService;
+    private final SimpMessagingTemplate messagingTemplate; // 웹소켓 발송 도구 주입
 
-    public NotificationService(NotificationRepository notificationRepository, ProjectRepository projectRepository, ProjectService projectService, UserRepository userRepository) {
-        this.notificationRepository = notificationRepository;
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
-        this.projectService = projectService;
-    }
+
 
 //    @Async
 //    @EventListener
@@ -75,6 +73,11 @@ public class NotificationService {
             Notification notification = Notification.of(recipient, message, Notification.NotificationType.PROJECT_DEADLINE_IMMINENT, url);
             notificationRepository.save(notification);
             // pushService.sendNotification(recipient, notification); // 5단계
+
+            long unreadCount = notificationRepository.countByRecipientAndIsReadFalse(recipient);
+
+            // 구독 경로: /sub/notifications/{userId}
+            messagingTemplate.convertAndSend("/sub/notifications/" + recipient.getId(), unreadCount);
         }
     }
 
