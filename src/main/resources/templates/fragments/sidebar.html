@@ -1,48 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <style>
-        .submenu {
-            display: none;
-            padding-left: 35px;
-        }
-
-        .submenu.active {
-            display: block;
-        }
-
-        .menu-toggle {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .menu-toggle .arrow {
-            display: inline-block;
-            transition: transform 0.2s;
-            margin-right: 5px;
-        }
-
-        .menu-toggle.expanded .arrow {
-            transform: rotate(90deg);
-        }
-
-        .submenu li {
-            padding: 5px 0;
-            font-size: 14px;
-        }
-
-        .submenu li a {
-            color: #555;
-            text-decoration: none;
-        }
-
-        .submenu li a:hover {
-            color: #3498db;
-        }
-    </style>
-</head>
-
 <body>
     <!-- th:fragment="sidebarFragment" : 이 nav 태그를 'sidebarFragment'라는 이름의 조각으로 정의 -->
     <nav class="sidebar" th:fragment="sidebarFragment">
@@ -63,6 +21,11 @@
                 <a
                     th:href="${currentProjectId != null} ? @{/projects/{id}/main(id=${currentProjectId})} : @{/projects}">
                     <span class="icon" style="margin-right: 15px;">🏠</span> Home
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/search'}">
+                    <span class="icon" style="margin-right: 15px;">🔍</span> 검색
                 </a>
             </li>
             <li><span class="icon" style="margin-right: 15px;">🚪</span> Project Room</li>
@@ -94,6 +57,14 @@
                 <span class="arrow">▶</span>
                 <span class="icon" style="margin-right: 15px;">📦</span> 산출물
             </li>
+            <!-- Submenu is now a sibling of the toggle li, but semantically it should be inside or handled by JS. 
+                 Current JS expects it to be next sibling. 
+                 To make it valid HTML, it should be inside a li, but the current CSS/JS structure relies on this flat structure.
+                 Given the constraints and previous code, keeping it as next sibling is the least risky change for functionality,
+                 although technically invalid HTML (ul inside ul). 
+                 However, the user asked to fix the "weird" look. 
+                 Let's keep the structure compatible with the JS I just moved to layout.html: element.nextElementSibling.
+            -->
             <ul class="submenu">
                 <li>
                     <a th:href="@{'/deliverable/test?tab=all'}">
@@ -150,14 +121,6 @@
             <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
         </ul>
     </nav>
-
-    <script>
-        function toggleSubmenu(element) {
-            element.classList.toggle('expanded');
-            const submenu = element.nextElementSibling;
-            submenu.classList.toggle('active');
-        }
-    </script>
 </body>
 
 </html>
