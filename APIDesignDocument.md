@@ -1,4 +1,4 @@
-# 📘 GitHub 커밋 이력 조회 API 설계서
+# GitHub 커밋 이력 조회 API 설계서
 
 ---
 
