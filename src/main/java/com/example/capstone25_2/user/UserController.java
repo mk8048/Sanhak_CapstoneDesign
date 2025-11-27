@@ -163,10 +163,8 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        // ⭐️ 1. 세션에서 현재 프로젝트 ID를 가져옵니다. ⭐️
         Long currentProjectId = (Long) httpSession.getAttribute("currentProjectId");
 
-        // ⭐️ 2. Model에 담아 HTML로 전달합니다. ⭐️
         model.addAttribute("currentProjectId", currentProjectId);
 
         try{
@@ -222,25 +220,20 @@ public class UserController {
 
         String userId = (String) session.getAttribute("userId");
 
-        // 1. 비로그인 상태 체크
         if (userId == null) {
             return "redirect:/user/login";
         }
 
         try {
-            // 2. Service 호출 및 DB에서 사용자 삭제
             userService.deleteUser(userId);
 
-            // 3. 세션 무효화 (필수 로그아웃 처리)
             session.invalidate();
 
-            // 4. 성공 메시지 담아 로그인 페이지로 이동
             redirectAttributes.addFlashAttribute("successMessage", "회원 탈퇴가 완료되었습니다.");
             return "redirect:/user/login";
 
         } catch (IllegalArgumentException e) {
-            // 5. 사용자를 찾을 수 없는 등 오류 발생 시 처리
-            session.invalidate(); // 보안을 위해 세션은 파기
+            session.invalidate();
             redirectAttributes.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다.");
             return "redirect:/user/login";
         }

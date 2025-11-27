@@ -19,7 +19,6 @@ public class TaskController {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
 
-    // Helper: 세션에서 userId 꺼내기
     private String getUserId(HttpSession session) {
         return (String) session.getAttribute("userId");
     }
@@ -64,7 +63,6 @@ public class TaskController {
         model.addAttribute("progress", progress);
         model.addAttribute("currentProjectId", projectId);
 
-        // ⭐️ [추가] 현재 사용자의 '역할' 정보를 뷰로 전달 ⭐️
         // (HTML에서 VIEWER일 경우 버튼을 숨기기 위함)
         ProjectRole userRole = projectService.getUserRoleInProject(projectId, userId);
         model.addAttribute("userRole", userRole);
@@ -74,7 +72,6 @@ public class TaskController {
 
     @PostMapping("/add")
     public String addTask(@RequestParam Long projectId, @RequestParam String title, HttpSession session) {
-        // ⭐️ userId 함께 전달
         taskService.addTask(projectId, title, getUserId(session));
         return "redirect:/tasks?projectId=" + projectId;
     }
@@ -82,7 +79,6 @@ public class TaskController {
     @PostMapping("/{taskId}/toggle")
     public String toggleTask(@PathVariable Long taskId, HttpSession session) {
         Long projectId = taskService.findProjectIdByTaskId(taskId);
-        // ⭐️ userId 함께 전달
         taskService.toggleTask(taskId, getUserId(session));
         return "redirect:/tasks?projectId=" + projectId;
     }
@@ -90,7 +86,6 @@ public class TaskController {
     @PostMapping("/{taskId}/delete")
     public String deleteTask(@PathVariable Long taskId, HttpSession session) {
         Long projectId = taskService.findProjectIdByTaskId(taskId);
-        // ⭐️ userId 함께 전달
         taskService.deleteTask(taskId, getUserId(session));
         return "redirect:/tasks?projectId=" + projectId;
     }

@@ -18,9 +18,8 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
-    private final ProjectService projectService; // ⭐️ ProjectService 주입
+    private final ProjectService projectService;
 
-    // 1. 진행률 및 목록 조회 (수정 없음)
     @Transactional(readOnly = true)
     public TaskProgressDTO getProgress(Long projectId) {
         Project project = projectRepository.findById(projectId)
@@ -45,10 +44,8 @@ public class TaskService {
         );
     }
 
-    // 2. 할 일 추가 (권한 체크 추가)
     @Transactional
-    public void addTask(Long projectId, String title, String userId) { // ⭐️ userId 추가
-        // 🛑 쓰기 권한 검사 (VIEWER 차단)
+    public void addTask(Long projectId, String title, String userId) {
         projectService.validateWriteAccess(projectId, userId);
 
         taskRepository.save(Task.builder()
@@ -58,32 +55,26 @@ public class TaskService {
                 .build());
     }
 
-    // 3. 완료 토글 (권한 체크 추가)
     @Transactional
-    public void toggleTask(Long taskId, String userId) { // ⭐️ userId 추가
+    public void toggleTask(Long taskId, String userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("할 일 없음"));
 
-        // 🛑 쓰기 권한 검사 (VIEWER 차단)
         projectService.validateWriteAccess(task.getProjectId(), userId);
 
         task.setCompleted(!task.isCompleted());
     }
 
-    // 4. 삭제 (권한 체크 추가)
     @Transactional
-    public void deleteTask(Long taskId, String userId) { // ⭐️ userId 추가
-        // taskId로 프로젝트 ID를 먼저 찾아야 함
+    public void deleteTask(Long taskId, String userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("할 일 없음"));
 
-        // 🛑 쓰기 권한 검사 (VIEWER 차단)
         projectService.validateWriteAccess(task.getProjectId(), userId);
 
         taskRepository.deleteById(taskId);
     }
 
-    // [유틸] 해당 Task가 속한 Project ID 찾기
     @Transactional(readOnly = true)
     public Long findProjectIdByTaskId(Long taskId) {
         return taskRepository.findById(taskId)
@@ -91,7 +82,6 @@ public class TaskService {
                 .orElse(1L);
     }
 
-    // 날짜 퍼센트 계산
     private double calculateTimeProgress(LocalDate start, LocalDate end) {
         LocalDate today = LocalDate.now();
         if (today.isBefore(start)) return 0.0;

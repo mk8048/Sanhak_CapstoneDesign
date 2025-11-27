@@ -49,7 +49,7 @@ public class User {
     private boolean focusMode;
 
     // DB에서 자동으로 관리되는 필드들
-    @Column(updatable = false) // 생성 시에만 값이 들어가도록 설정
+    @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
