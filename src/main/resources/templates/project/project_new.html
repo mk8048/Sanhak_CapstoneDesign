@@ -1,46 +1,130 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
 <head>
-    <h1 align="center">캡스톤 매니저</h1>
-    <meta charset="UTF-8">
     <title>새 프로젝트 생성</title>
+    <style>
+        .project-form-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .cancel-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+
+        .cancel-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
 </head>
+
 <body>
+    <div layout:fragment="content" class="page-content">
+        <div class="project-form-container">
+            <div class="form-title">새 프로젝트 생성</div>
+            <form th:action="@{/project/create}" method="POST">
+                <div class="form-group">
+                    <label for="projectName">프로젝트명</label>
+                    <input type="text" id="projectName" name="projectName" required placeholder="프로젝트 이름을 입력하세요" />
+                </div>
 
-<form th:action="@{/project/create}" method="POST">
-    <table align="center">
-        <tr><td colspan="2" align="center" height="40"><b>새 프로젝트 생성</b></td></tr>
+                <div class="form-group">
+                    <label for="description">설명</label>
+                    <textarea id="description" name="description" placeholder="프로젝트에 대한 간단한 설명을 입력하세요"></textarea>
+                </div>
 
-        <tr>
-            <td align="right">프로젝트명&nbsp;</td>
-            <td><input type="text" name="projectName" required placeholder="프로젝트 이름 입력"/></td>
-        </tr>
+                <div class="form-group">
+                    <label for="deadline">마감일</label>
+                    <input type="date" id="deadline" name="deadline" required />
+                </div>
 
-        <tr>
-            <td align="right">설명&nbsp;</td>
-            <td><input type="text" name="description" placeholder="간단한 설명"/></td>
-        </tr>
-
-        <tr>
-            <td align="right">마감일&nbsp;</td>
-            <td><input type="date" name="deadline" required/></td>
-        </tr>
-
-        <tr>
-            <td colspan="2" align="center" height="50">
-                <input type="submit" value="프로젝트 생성"/>
-            </td>
-        </tr>
-    </table>
-</form>
-
-<hr style="margin: 30px auto; width: 400px;">
-
-<p align="center">
-    <a th:href="@{/projects}">
-        <button type="button" style="padding: 10px 20px;">목록으로 돌아가기</button>
-    </a>
-</p>
-
+                <button type="submit" class="submit-btn">프로젝트 생성</button>
+                <a th:href="@{/projects}" class="cancel-btn">취소</a>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>

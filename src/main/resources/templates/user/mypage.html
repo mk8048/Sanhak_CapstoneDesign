@@ -1,142 +1,264 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
 <head>
-    <h1 align="center">캡스톤 매니저</h1>
-    <meta charset="UTF-8">
     <title>내 정보 수정</title>
+    <style>
+        .mypage-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .form-group input[readonly] {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .danger-zone {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .danger-zone h4 {
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
+
 <body>
 
-<form th:action="@{/user/mypage}" method="POST">
-    <table align="center">
-        <tr><td colspan="2" align="center" height="40"><b>내 정보 수정</b></td></tr>
+    <main layout:fragment="content" class="page-content">
+        <div class="mypage-container">
+            <div class="section-title">내 정보 수정</div>
 
-        <tr>
-            <td align="right">아이디&nbsp;</td>
-            <td><input type="text" name="id" th:value="${user.id}" readonly style="background-color: #eee;"/></td>
-        </tr>
+            <form th:action="@{/user/mypage}" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id">아이디</label>
+                        <input type="text" id="id" name="id" th:value="${user.id}" readonly />
+                    </div>
 
-        <tr>
-            <td align="right">새 비밀번호&nbsp;</td>
-            <td><input type="password" name="newPassword" placeholder="변경 시에만 입력"/></td>
-        </tr>
-        <tr>
-            <td align="right">비밀번호 확인&nbsp;</td>
-            <td><input type="password" name="newPasswordConfirm" placeholder="새 비밀번호 재입력"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="name">이름</label>
+                        <input type="text" id="name" name="name" required th:value="${user.name}" />
+                    </div>
 
-        <tr>
-            <td align="right">이름&nbsp;</td>
-            <td><input type="text" name="name" required th:value="${user.name}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="newPassword">새 비밀번호</label>
+                        <input type="password" id="newPassword" name="newPassword" placeholder="변경 시에만 입력" />
+                    </div>
 
-        <tr>
-            <td align="right">이메일&nbsp;</td>
-            <td><input type="email" name="email" required th:value="${user.email}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="newPasswordConfirm">비밀번호 확인</label>
+                        <input type="password" id="newPasswordConfirm" name="newPasswordConfirm"
+                            placeholder="새 비밀번호 재입력" />
+                    </div>
 
-        <tr>
-            <td align="right">닉네임&nbsp;</td>
-            <td><input type="text" name="nickname" placeholder="별명을 입력하세요" th:value="${user.nickname}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="email">이메일</label>
+                        <input type="email" id="email" name="email" required th:value="${user.email}" />
+                    </div>
 
-        <tr>
-            <td align="right">전화번호&nbsp;</td>
-            <td><input type="tel" name="phone" placeholder="010-0000-0000" th:value="${user.phone}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="nickname">닉네임</label>
+                        <input type="text" id="nickname" name="nickname" placeholder="별명을 입력하세요"
+                            th:value="${user.nickname}" />
+                    </div>
 
-        <tr>
-            <td align="right">지역&nbsp;</td>
-            <td><input type="text" name="location" placeholder="거주 지역" th:value="${user.location}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="phone">전화번호</label>
+                        <input type="tel" id="phone" name="phone" placeholder="010-0000-0000"
+                            th:value="${user.phone}" />
+                    </div>
 
-        <tr>
-            <td align="right">직업/직무&nbsp;</td>
-            <td><input type="text" name="job" placeholder="개발자, 학생 등" th:value="${user.job}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="location">지역</label>
+                        <input type="text" id="location" name="location" placeholder="거주 지역"
+                            th:value="${user.location}" />
+                    </div>
 
-        <tr>
-            <td align="right">가입 목적&nbsp;</td>
-            <td><input type="text" name="purpose" placeholder="서비스 이용 목적" th:value="${user.purpose}"/></td>
-        </tr>
+                    <div class="form-group">
+                        <label for="job">직업/직무</label>
+                        <input type="text" id="job" name="job" placeholder="개발자, 학생 등" th:value="${user.job}" />
+                    </div>
 
-        <tr>
-            <td align="right">GitHub URL&nbsp;</td>
-            <td><input type="url" name="githubUrl" placeholder="https://github.com/" th:value="${user.githubUrl}"/></td>
-        </tr>
+                    <div class="form-group full-width">
+                        <label for="purpose">가입 목적</label>
+                        <input type="text" id="purpose" name="purpose" placeholder="서비스 이용 목적"
+                            th:value="${user.purpose}" />
+                    </div>
 
-        <tr>
-            <td align="right">프로필 이미지 URL&nbsp;</td>
-            <td><input type="url" name="profileImageUrl" placeholder="이미지 주소" th:value="${user.profileImageUrl}"/></td>
-        </tr>
+                    <div class="form-group full-width">
+                        <label for="githubUrl">GitHub URL</label>
+                        <input type="url" id="githubUrl" name="githubUrl" placeholder="https://github.com/"
+                            th:value="${user.githubUrl}" />
+                    </div>
 
-        <tr>
-            <td colspan="2" align="center" height="50">
-                <input type="submit" value="정보 수정 완료"/>
-            </td>
-        </tr>
-    </table>
-</form>
+                    <div class="form-group full-width">
+                        <label for="profileImageUrl">프로필 이미지 URL</label>
+                        <input type="url" id="profileImageUrl" name="profileImageUrl" placeholder="이미지 주소"
+                            th:value="${user.profileImageUrl}" />
+                    </div>
+                </div>
 
-<hr style="margin: 30px auto; width: 400px;">
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">정보 수정 완료</button>
+                    <a th:href="@{'/projects/' + ${currentProjectId} + '/main'}" class="btn btn-secondary">메인 화면으로</a>
+                </div>
+            </form>
 
-<p align="center">
-    <a th:href="@{'/projects/' + ${currentProjectId} + '/main'}">
-        <button type="button" style="padding: 10px 20px;">메인 화면으로 돌아가기</button>
-    </a>
-</p>
+            <div class="danger-zone">
+                <h4>위험 구역</h4>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <form th:action="@{/project/leave}" method="POST">
+                        <input type="hidden" name="projectId" th:value="${currentProjectId}" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('정말 이 프로젝트에서 탈퇴하시겠습니까?');">
+                            프로젝트 탈퇴
+                        </button>
+                    </form>
 
-<form th:action="@{/project/leave}" method="POST" align="center" style="margin-top: 10px;">
-    <input type="hidden" name="projectId" th:value="${currentProjectId}" />
-    <button type="submit"
-            onclick="return confirm('정말 이 프로젝트에서 탈퇴하시겠습니까?');">
-        프로젝트 탈퇴
-    </button>
-</form>
+                    <form th:action="@{/user/delete}" method="POST">
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('정말 회원 탈퇴를 하시겠습니까? 모든 정보가 삭제됩니다.');">
+                            회원 탈퇴
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-<form th:action="@{/user/delete}" method="POST" align="center" style="margin-top: 10px;">
-    <button type="submit"
-            onclick="return confirm('정말 회원 탈퇴를 하시겠습니까? 모든 정보가 삭제됩니다.');">
-        회원 탈퇴
-    </button>
-</form>
+        <div th:if="${mypageError != null or mypageSuccess != null}" id="mypage-toast" th:styleappend="${mypageError != null ?
+         'background-color: rgba(220, 53, 69, 0.9);' : 'background-color: rgba(40, 167, 69, 0.9);'}" style="
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-weight: bold;
+        ">
+            <span th:text="${mypageError ?: '정보가 성공적으로 수정되었습니다.'}">[메시지]</span>
+        </div>
 
-<div th:if="${mypageError != null or mypageSuccess != null}"
-     id="mypage-toast"
+        <script th:if="${mypageError != null or mypageSuccess != null}">
+            document.addEventListener('DOMContentLoaded', () => {
+                const toastElement = document.getElementById('mypage-toast');
 
-     th:styleappend="${mypageError != null ?
-     'background-color: rgba(220, 53, 69, 0.9);' : 'background-color: rgba(40, 167, 69, 0.9);'}"
+                setTimeout(() => {
+                    toastElement.style.opacity = '1';
+                }, 100);
 
-     style="
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: white;
-        padding: 12px 25px;
-        border-radius: 8px;
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        font-weight: bold;
-    ">
-    <span th:text="${mypageError ?: '정보가 성공적으로 수정되었습니다.'}">[메시지]</span>
-</div>
-
-<script th:if="${mypageError != null or mypageSuccess != null}">
-    document.addEventListener('DOMContentLoaded', () => {
-        const toastElement = document.getElementById('mypage-toast');
-
-        setTimeout(() => {
-            toastElement.style.opacity = '1';
-        }, 100);
-
-        setTimeout(() => {
-            toastElement.style.opacity = '0';
-        }, 3500);
-    });
-</script>
+                setTimeout(() => {
+                    toastElement.style.opacity = '0';
+                }, 3500);
+            });
+        </script>
+    </main>
 
 </body>
+
 </html>

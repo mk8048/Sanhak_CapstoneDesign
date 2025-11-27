@@ -1,48 +1,127 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <title>로그인</title>
+    <title>로그인 - 캡스톤 매니저</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+            /* padding 포함 */
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
 
-<form th:action="@{/user/login}" method="POST">
-    <table align="center">
-        <tr><td colspan="2" align="center" height="40"><b>캡스톤 매니저</b></td></tr>
+    <div class="login-container">
+        <div class="login-title">캡스톤 매니저</div>
 
-        <tr>
-            <td align="right">아이디&nbsp;</td>
-            <td><input type="text" name="id" th:value="${id}" required/></td>
-        </tr>
+        <form th:action="@{/user/login}" method="POST">
+            <div class="form-group">
+                <label for="id">아이디</label>
+                <input type="text" id="id" name="id" th:value="${id}" required placeholder="아이디를 입력하세요" />
+            </div>
 
-        <tr>
-            <td align="right">패스워드&nbsp;</td>
-            <td><input type="password" name="ps" required/></td>
-        </tr>
+            <div class="form-group">
+                <label for="ps">비밀번호</label>
+                <input type="password" id="ps" name="ps" required placeholder="비밀번호를 입력하세요" />
+            </div>
 
-        <tr>
-            <td colspan="2" align="center" height="30">
-                <a th:href="@{/user/signup}" style="float: left; margin-left: 10px;">
-                    <button type="button">회원가입</button>
-                </a>
+            <button type="submit" class="login-btn">로그인</button>
 
-                <a th:href="@{/user/find-credentials}" style="float: right; margin-right: 10px;">
-                    <button type="button">아이디/비밀번호 찾기</button>
-                </a>
-            </td>
-        </tr>
+            <div class="links">
+                <a th:href="@{/user/signup}">회원가입</a>
+                <a th:href="@{/user/find-credentials}">아이디/비밀번호 찾기</a>
+            </div>
+        </form>
+    </div>
 
-        <tr>
-            <td colspan="2" align="center" height="50">
-                <input type="submit" value="로그인"/>
-            </td>
-        </tr>
-    </table>
-</form>
-
-<div th:if="${loginError}"
-     id="login-toast"
-     style="
+    <div th:if="${loginError}" id="login-toast" style="
         position: fixed;
         bottom: 30px;
         left: 50%;
@@ -57,22 +136,23 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         font-weight: bold;
     ">
-    <span th:text="${loginError}">[에러 메시지]</span>
-</div>
+        <span th:text="${loginError}">[에러 메시지]</span>
+    </div>
 
-<script th:if="${loginError}">
-    document.addEventListener('DOMContentLoaded', () => {
-        const toastElement = document.getElementById('login-toast');
+    <script th:if="${loginError}">
+        document.addEventListener('DOMContentLoaded', () => {
+            const toastElement = document.getElementById('login-toast');
 
-        setTimeout(() => {
-            toastElement.style.opacity = '1';
-        }, 100);
+            setTimeout(() => {
+                toastElement.style.opacity = '1';
+            }, 100);
 
-        setTimeout(() => {
-            toastElement.style.opacity = '0';
-        }, 3500);
-    });
-</script>
+            setTimeout(() => {
+                toastElement.style.opacity = '0';
+            }, 3500);
+        });
+    </script>
 
 </body>
+
 </html>
