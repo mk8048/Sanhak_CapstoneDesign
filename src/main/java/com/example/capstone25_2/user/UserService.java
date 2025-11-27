@@ -1,5 +1,6 @@
 package com.example.capstone25_2.user;
 
+import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,6 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
     // ⭐️ (향후 추가) private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProjectRepository projectRepository;
 
     // -- 회원가입 --
     @Transactional
@@ -144,6 +146,7 @@ public class UserService {
         // 1. 로그인 ID(String)를 사용하여 사용자 엔티티를 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("탈퇴할 사용자 정보를 찾을 수 없습니다."));
+        projectRepository.deleteMemberByUserId(userId);
 
         // 2. 엔티티 삭제
         userRepository.delete(user);

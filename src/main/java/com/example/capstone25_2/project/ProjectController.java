@@ -21,10 +21,8 @@ public class ProjectController {
     @GetMapping("/api/project")
     public ResponseEntity<List<ProjectResponse>> findProject() {
 
-        // 🚨 임시 사용자 ID 설정 (실제로는 SecurityContext에서 가져와야 함)
         String currentUserId = "API_USER";
 
-        // findProject() 대신 findProjectsByUserId()를 호출합니다.
         List<ProjectResponse> projects = projectService.findProjectsByUserId(currentUserId);
 
         return ResponseEntity.ok()
@@ -35,9 +33,6 @@ public class ProjectController {
     @PostMapping("/api/project")
     public ResponseEntity<Project> addProject(@RequestBody AddProjectRequest request) {
 
-        // 🚨 임시 처리: REST API 호출 시 사용자 ID를 알 수 없으므로,
-        // 현재는 하드코딩하거나(비권장), 헤더에서 추출해야 합니다.
-        // 여기서는 임시로 "API_USER"라는 ID를 전달한다고 가정합니다.
         String tempCreatorId = "API_USER";
 
         // ProjectService.save()의 시그니처 변경에 맞춰 creatorId 인자 추가

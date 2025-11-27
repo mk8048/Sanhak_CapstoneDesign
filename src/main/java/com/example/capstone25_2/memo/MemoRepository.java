@@ -13,4 +13,6 @@ public interface MemoRepository extends JpaRepository<Memo, Long> {
 
     // 검색용 메서드
     List<Memo> findByContentContaining(String content);
+
+    void deleteByProjectId(Long projectId);
 }

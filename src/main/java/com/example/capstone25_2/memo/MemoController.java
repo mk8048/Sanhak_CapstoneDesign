@@ -1,6 +1,7 @@
 package com.example.capstone25_2.memo;
 
 import com.example.capstone25_2.memo.dto.*;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,10 @@ public class MemoController {
 
     public MemoController(MemoService memoService) {
         this.memoService = memoService;
+    }
+
+    private String getUserId(HttpSession session) {
+        return (String) session.getAttribute("userId");
     }
 
 
@@ -53,8 +58,11 @@ public class MemoController {
     }
 
     @PostMapping("/api/memo")
-    public ResponseEntity<Memo> addMemo(@RequestBody AddMemoRequest request) {
-        Memo savedMemo = memoService.save(request);
+    public ResponseEntity<Memo> addMemo(@RequestBody AddMemoRequest request, HttpSession session) {
+        // ⭐️ userId 전달
+        Memo savedMemo = memoService.save(request, getUserId(session));
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedMemo);
+    }
 
         /*
         POST /api/memo
@@ -69,26 +77,22 @@ public class MemoController {
         }
          */
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedMemo);
-    }
-
 
     @DeleteMapping("/api/memo/{id}")
-    public ResponseEntity<Void> deleteMemo(@PathVariable Long id) {
-        memoService.delete(id);
-
-        return ResponseEntity.ok()
-                .build();
+    public ResponseEntity<Void> deleteMemo(@PathVariable Long id, HttpSession session) {
+        // ⭐️ userId 전달
+        memoService.delete(id, getUserId(session));
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/api/memo/canvas/{id}")
     public ResponseEntity<Memo> UpdateMemoPosition(@PathVariable long id,
-                                                   @RequestBody UpdateMemoCanvasRequest request) {
-        Memo updatePositionMemo = memoService.updateCanvas(id, request);
-
-        return ResponseEntity.ok()
-                .body(updatePositionMemo);
+                                                   @RequestBody UpdateMemoCanvasRequest request,
+                                                   HttpSession session) {
+        // ⭐️ userId 전달
+        Memo updatePositionMemo = memoService.updateCanvas(id, request, getUserId(session));
+        return ResponseEntity.ok().body(updatePositionMemo);
+    }
 
         /*
         {
@@ -98,15 +102,14 @@ public class MemoController {
             "color": "#FFFF00"
         }
          */
-    }
 
     @PutMapping("/api/memo/list/{id}")
     public ResponseEntity<Memo> UpdateMemoContent(@PathVariable long id,
-                                                  @RequestBody UpdateMemoListRequest request) {
-        Memo updateContentMemo = memoService.updateList(id, request);
-
-        return ResponseEntity.ok()
-                .body(updateContentMemo);
+                                                  @RequestBody UpdateMemoListRequest request,
+                                                  HttpSession session) {
+        // ⭐️ userId 전달
+        Memo updateContentMemo = memoService.updateList(id, request, getUserId(session));
+        return ResponseEntity.ok().body(updateContentMemo);
     }
 
     /*

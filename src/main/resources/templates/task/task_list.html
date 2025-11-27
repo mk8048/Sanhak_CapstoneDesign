@@ -76,7 +76,7 @@
             transition: width 0.6s ease;
         }
 
-        /* 시간 경과율 색상 (회색/파랑) */
+        /* 시간 경과율 색상 (회색) */
         .fill-time { background-color: #6c757d; }
         /* 업무 달성률 색상 (초록) */
         .fill-work { background-color: #28a745; }
@@ -158,7 +158,6 @@
         }
         .btn-toggle:hover { background-color: #28a745; color: white; }
 
-        /* 완료 상태일 때 버튼 스타일 */
         .btn-toggle.active {
             background-color: #6c757d;
             border-color: #6c757d;
@@ -172,6 +171,16 @@
             color: #dc3545;
         }
         .btn-delete:hover { background-color: #dc3545; color: white; }
+
+        /* 뷰어용 읽기 전용 텍스트 */
+        .viewer-badge {
+            font-size: 0.85rem;
+            color: #888;
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
 
         /* 빈 상태 메시지 */
         .empty-msg {
@@ -213,7 +222,7 @@
                 </div>
             </div>
 
-            <div class="task-card">
+            <div class="task-card" th:if="${userRole != T(com.example.capstone25_2.project.ProjectRole).VIEWER}">
                 <form action="/tasks/add" method="post" class="add-task-form">
                     <input type="hidden" name="projectId" th:value="${progress.projectId}">
                     <input type="text" name="title" class="task-input" placeholder="새로운 할 일을 입력하세요" required>
@@ -234,7 +243,8 @@
                               th:text="${task.title}"
                               th:classappend="${task.isCompleted} ? 'task-done' : ''">할 일 제목</span>
 
-                        <div class="btn-group">
+                        <div class="btn-group" th:if="${userRole != T(com.example.capstone25_2.project.ProjectRole).VIEWER}">
+
                             <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" style="margin:0;">
                                 <button type="submit" class="btn-sm btn-toggle"
                                         th:classappend="${task.isCompleted} ? 'active' : ''">
@@ -246,6 +256,11 @@
                                   onsubmit="return confirm('정말 삭제하시겠습니까?');">
                                 <button type="submit" class="btn-sm btn-delete">삭제</button>
                             </form>
+                        </div>
+
+                        <div th:if="${userRole == T(com.example.capstone25_2.project.ProjectRole).VIEWER}"
+                             class="viewer-badge">
+                            🔒 Read Only
                         </div>
                     </li>
                 </ul>

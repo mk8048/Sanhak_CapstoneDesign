@@ -1,6 +1,9 @@
 package com.example.capstone25_2.project;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -22,4 +25,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     // 검색용 메서드
     List<Project> findByProjectNameContainingOrDescriptionContaining(String name, String description);
+
+    @Modifying
+    @Query("DELETE FROM ProjectMember pm WHERE pm.userId = :userId")
+    void deleteMemberByUserId(@Param("userId") String userId);
 }

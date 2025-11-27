@@ -33,14 +33,12 @@ public class Project {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = true, updatable = false)
+    @Column(nullable = true)
     private LocalDate deadline;
 
-    // 👑 프로젝트 소유자 (유일한 관리자)
     @Column(nullable = true)
     private Long usersId;
 
-    // 👥 나머지 멤버 목록
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectMember> members = new ArrayList<>();
 
@@ -63,7 +61,7 @@ public class Project {
         this.deadline = request.getDeadline();
     }
 
-    // 멤버 추가 (기본 역할: MEMBER)
+    // 멤버 추가
     public void addMember(String userId, ProjectRole role) {
         boolean exists = this.members.stream().anyMatch(m -> m.getUserId().equals(userId));
         if (!exists) {
@@ -76,7 +74,7 @@ public class Project {
         this.members.removeIf(member -> member.getUserId().equals(userId));
     }
 
-    // 멤버 역할 조회 헬퍼
+    // 멤버 역할 조회
     public Optional<ProjectRole> getMemberRole(String userId) {
         return this.members.stream()
                 .filter(m -> m.getUserId().equals(userId))

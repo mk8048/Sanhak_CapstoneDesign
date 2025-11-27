@@ -6,7 +6,7 @@
 <div layout:fragment="content">
     <h2 th:text="${pageTitle} + ' 팀원 관리'">팀원 관리</h2>
 
-    <div style="margin-top: 20px; max-width: 800px;">
+    <div style="margin-top: 20px; max-width: 900px;">
         <h3>현재 참여 중인 팀원 (<span th:text="${#lists.size(members)}"></span>명)</h3>
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
             <thead>
@@ -19,17 +19,45 @@
             </thead>
             <tbody>
             <tr th:each="member : ${members}" style="border-bottom: 1px solid #eee;">
-                <td th:text="${member.id}" style="padding: 10px; border: 1px solid #ddd;"></td>
-                <td th:text="${member.nickname ?: member.name}" style="padding: 10px; border: 1px solid #ddd;"></td>
+
+                <td th:text="${member.user.id}" style="padding: 10px; border: 1px solid #ddd;"></td>
+                <td th:text="${member.user.nickname ?: member.user.name}" style="padding: 10px; border: 1px solid #ddd;"></td>
 
                 <td style="padding: 10px; border: 1px solid #ddd;">
-                    <span th:text="${member.pk_id == ownerPkId ? '소유자' : '멤버'}">멤버</span>
+                    <span th:if="${member.owner}" style="font-weight: bold; color: #007bff;">👑 소유자</span>
+
+                    <div th:if="${!member.owner}">
+
+                        <form th:if="${ownerPkId == loginUserPk}"
+                              th:action="@{/project/member/update-role}" method="POST" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="hidden" name="projectId" th:value="${projectId}" />
+                            <input type="hidden" name="targetUserId" th:value="${member.user.id}" />
+
+                            <select name="newRole" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                                <option th:each="role : ${roles}"
+                                        th:value="${role}"
+                                        th:text="${role}"
+                                        th:selected="${role == member.role}"
+                                        th:if="${role.name() != 'ADMIN'}"> </option>
+                            </select>
+                            <button type="submit" style="padding: 5px 10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">변경</button>
+                        </form>
+
+                        <span th:unless="${ownerPkId == loginUserPk}"
+                              th:text="${member.role}">MEMBER</span>
+                    </div>
                 </td>
 
                 <td style="padding: 10px; border: 1px solid #ddd;">
-                    <form th:action="@{/project/kick}" method="POST" style="display: inline;">
-                        <button type="submit" style="background-color: #ffc107; border: none; padding: 5px 10px;">추방</button>
-                    </form>
+                    <div th:if="${!member.owner}">
+                        <form th:if="${ownerPkId == loginUserPk}"
+                              th:action="@{/project/kick}" method="POST" style="display: inline;">
+                            <input type="hidden" name="projectId" th:value="${projectId}" />
+                            <input type="hidden" name="targetUserId" th:value="${member.user.id}" />
+                            <button type="submit" style="background-color: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
+                                    onclick="return confirm('정말 추방하시겠습니까?');">추방</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             </tbody>
@@ -45,10 +73,16 @@
             <input type="text" name="emailOrId" placeholder="초대할 팀원의 이메일 (또는 ID)" required
                    style="padding: 8px; width: 70%; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px;">
             <button type="submit" style="padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">조회</button>
+
             <p th:if="${inviteError}"
                style="color: red; font-weight: bold; margin-top: 10px;"
                th:text="${inviteError}">
                 [에러 메시지]
+            </p>
+            <p th:if="${inviteSuccess}"
+               style="color: green; font-weight: bold; margin-top: 10px;"
+               th:text="${inviteSuccess}">
+                [성공 메시지]
             </p>
         </form>
     </div>

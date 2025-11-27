@@ -1,6 +1,6 @@
 package com.example.capstone25_2.user;
 
-
+import com.example.capstone25_2.notification.Notification;
 import com.example.capstone25_2.user.dto.UserSignupRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,10 +49,13 @@ public class User {
     private boolean focusMode;
 
     // DB에서 자동으로 관리되는 필드들
-    @Column(updatable = false) // 생성 시에만 값이 들어가도록 설정
+    @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     // DTO를 Entity로 변환하는 정적 팩토리 메서드
     public static User from(UserSignupRequestDto dto) {

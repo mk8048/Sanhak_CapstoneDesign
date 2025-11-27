@@ -126,7 +126,14 @@
                     <span class="icon" style="margin-right: 15px;">👥</span> Members
                 </a>
             </li>
-            <li><span class="icon" style="margin-right: 15px;">⚙️</span> Settings</li>
+            <li th:if="${currentProjectId != null}">
+                <a th:href="@{'/projects/' + ${currentProjectId} + '/settings'}">
+                    <span class="icon" style="margin-right: 15px;">⚙️</span> Settings
+                </a>
+            </li>
+            <li th:if="${currentProjectId == null}" style="color: #aaa; cursor: not-allowed;">
+                <span class="icon" style="margin-right: 15px;">⚙️</span> Settings
+            </li>
         </ul>
     </nav>
 </body>
