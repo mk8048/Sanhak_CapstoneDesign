@@ -1,6 +1,7 @@
 package com.example.capstone25_2.project;
 
 import com.example.capstone25_2.project.dto.AddProjectRequest;
+import com.example.capstone25_2.project.dto.ProjectMemberDto;
 import com.example.capstone25_2.project.dto.ProjectResponse;
 import com.example.capstone25_2.user.User;
 import com.example.capstone25_2.user.UserService;
@@ -145,18 +146,39 @@ public class ProjectWebController {
             if (!projectService.checkUserAccessById(userId, projectId)) {
                 throw new SecurityException("접근 권한이 없습니다.");
             }
-            List<User> members = projectService.getProjectMembers(projectId);
+            List<ProjectMemberDto> members = projectService.getProjectMembers(projectId);
             Project project = projectService.getProjectById(projectId);
 
-            model.addAttribute("members", members);
+            Long loginUserPk = projectService.getUserPkId(userId);
+            model.addAttribute("loginUserPk", loginUserPk);
+            model.addAttribute("members", members); // 이제 members는 DTO 리스트입니다.
             model.addAttribute("ownerPkId", project.getUsersId());
             model.addAttribute("pageTitle", project.getProjectName());
+            // ⭐️ Enum 값을 뷰에서 쓰기 위해 추가 (선택 상자에 사용)
+            model.addAttribute("roles", ProjectRole.values());
 
             return "project/members";
 
         } catch (SecurityException | IllegalArgumentException e) {
             return "redirect:/projects";
         }
+    }
+
+    @PostMapping("/project/member/update-role")
+    public String updateMemberRole(@RequestParam Long projectId,
+                                   @RequestParam String targetUserId,
+                                   @RequestParam ProjectRole newRole,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(session); // 현재 로그인한 사람 (소유자여야 함)
+            projectService.updateMemberRole(projectId, userId, targetUserId, newRole);
+
+            redirectAttributes.addFlashAttribute("inviteSuccess", "멤버 역할이 변경되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("inviteError", e.getMessage());
+        }
+        return "redirect:/projects/" + projectId + "/members";
     }
 
     // [수정] 1. 팀원 조회 (Search) - 리다이렉트 제거

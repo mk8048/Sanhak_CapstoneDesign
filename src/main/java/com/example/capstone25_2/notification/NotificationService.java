@@ -7,6 +7,7 @@ import com.example.capstone25_2.project.ProjectService;
 import com.example.capstone25_2.user.User;
 import com.example.capstone25_2.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import com.example.capstone25_2.project.dto.ProjectMemberDto;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import com.example.capstone25_2.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -34,7 +36,9 @@ public class NotificationService {
         // Memo에서 프로젝트 ID 가져오기
         Long projectId = memo.getProjectId();
 
-        List<User> recipients = projectService.getProjectMembers(projectId);
+        List<User> recipients = projectService.getProjectMembers(projectId).stream()
+                .map(ProjectMemberDto::getUser) // DTO -> User 변환
+                .collect(Collectors.toList());
 
         String message;
 
@@ -76,7 +80,9 @@ public class NotificationService {
         Project project = event.getProject();
         int daysleft = event.getDaysUntilDeadline(); // 이벤트에서 남은 날짜 가져오기
 
-        List<User> recipients = projectService.getProjectMembers(project.getProjectId());
+        List<User> recipients = projectService.getProjectMembers(project.getProjectId()).stream()
+                .map(ProjectMemberDto::getUser) // DTO -> User 변환
+                .collect(Collectors.toList());
 
         // 동적 변경
         String message = "프로젝트 '" + project.getProjectName() + "의 마감 기한이 " + daysleft + "일 남았습니다!";

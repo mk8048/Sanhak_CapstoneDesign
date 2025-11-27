@@ -1,6 +1,6 @@
 package com.example.capstone25_2.user;
 
-
+import com.example.capstone25_2.notification.Notification;
 import com.example.capstone25_2.user.dto.UserSignupRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -51,6 +53,9 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     // DTO를 Entity로 변환하는 정적 팩토리 메서드
     public static User from(UserSignupRequestDto dto) {

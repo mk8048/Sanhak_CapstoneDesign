@@ -1,5 +1,6 @@
 package com.example.capstone25_2.project;
 
+import com.example.capstone25_2.project.dto.ProjectMemberDto;
 import com.example.capstone25_2.user.UserRepository;
 import com.example.capstone25_2.user.User;
 import com.example.capstone25_2.project.dto.AddProjectRequest;
@@ -11,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +22,7 @@ public class ProjectService {
     private final UserRepository userRepository;
 
     // Helper: 로그인 ID(String)를 User PK(Long)로 변환
-    private Long getUserPkId(String userId) {
+    public Long getUserPkId(String userId) { // Controller 등에서 호출 가능하도록 public
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
         return user.getPk_id();
@@ -35,115 +35,120 @@ public class ProjectService {
         return user.getId();
     }
 
-    // [MODIFIED] 프로젝트 목록 조회: ProjectMember 엔티티 조회로 변경
+    // [1] 프로젝트 목록 조회
     public List<ProjectResponse> findProjectsByUserId(String userId) {
-        // ProjectMember 엔티티를 통해 userId가 포함된 프로젝트 조회 (Repository 쿼리 변경 필요)
-        // findDistinctByMembers_UserId(String userId) 사용
         List<Project> projects = projectRepository.findDistinctByMembers_UserId(userId);
 
         return projects.stream()
                 .map(project -> {
-                    // 1. 소유자 로그인 ID 조회
                     String ownerLoginId = getLoginIdByUserPk(project.getUsersId());
-
-                    // 2. 모든 멤버 ID 리스트 추출 (ProjectMember -> userId)
                     List<String> memberIds = project.getMembers().stream()
                             .map(ProjectMember::getUserId)
                             .collect(Collectors.toList());
 
-                    // 3. 정렬된 리스트 생성 (소유자 우선)
                     List<String> sortedMembers = new ArrayList<>();
                     if (memberIds.contains(ownerLoginId)) {
                         sortedMembers.add(ownerLoginId);
                     }
-
                     memberIds.stream()
                             .filter(id -> !id.equals(ownerLoginId))
                             .sorted()
                             .forEach(sortedMembers::add);
 
-                    // 4. 문자열 변환
                     String allMembers = String.join(", ", sortedMembers);
-
-                    // 5. DTO 생성
                     return new ProjectResponse(project, ownerLoginId, allMembers);
                 })
                 .collect(Collectors.toList());
     }
 
-    //  [MODIFIED] 접근 권한 확인: ProjectMember 엔티티 검사
+    // [2] 접근 권한 확인 (단순 페이지 접근용)
     public boolean checkUserAccessById(String userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // 멤버 리스트에서 해당 userId가 있는지 확인
         boolean isMember = project.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(userId));
 
-        if (isMember) {
-            return true;
-        }
+        if (isMember) return true;
 
         throw new SecurityException("해당 프로젝트에 접근 권한이 없습니다.");
     }
 
-    //  [MODIFIED] 프로젝트 생성: 소유자를 MEMBER 역할로 추가
+    // ⭐️ [신규] 쓰기/수정 권한 검증 메서드 (Task, Memo 등 공용) ⭐️
+    public void validateWriteAccess(Long projectId, String userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        // 1. 소유자(Owner)라면 통과
+        Long userPk = getUserPkId(userId);
+        if (project.getUsersId().equals(userPk)) {
+            return; // 통과
+        }
+
+        // 2. 멤버 역할 확인
+        ProjectRole role = project.getMemberRole(userId)
+                .orElseThrow(() -> new SecurityException("프로젝트 멤버가 아닙니다."));
+
+        // 3. VIEWER라면 차단
+        if (role == ProjectRole.VIEWER) {
+            throw new SecurityException("읽기 전용 권한입니다. (수정 불가)");
+        }
+    }
+
+    // ⭐️ [신규] 현재 유저의 역할 반환 (Controller용 헬퍼) ⭐️
+    public ProjectRole getUserRoleInProject(Long projectId, String userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트 없음"));
+
+        // 소유자인지 확인 -> 소유자라면 null 대신 별도 처리하거나 그냥 MEMBER 이상의 역할인 것으로 간주
+        Long userPk = getUserPkId(userId);
+        if (project.getUsersId().equals(userPk)) {
+            return ProjectRole.MEMBER; // 소유자는 모든 권한을 가짐 (MEMBER 권한 포함)
+        }
+
+        return project.getMemberRole(userId).orElse(ProjectRole.VIEWER); // 역할 없으면 뷰어로 처리 (안전장치)
+    }
+
+    // [3] 프로젝트 생성
     @Transactional
     public Project save(String creatorId, AddProjectRequest request) {
         Long creatorPkId = getUserPkId(creatorId);
-
         Project newProject = Project.from(request);
-
-        // 1. 소유자 PK 설정 (최고 관리자)
         newProject.setUsersId(creatorPkId);
-
-        // 2. 멤버 리스트에 생성자 추가 (기본 역할 MEMBER)
-        // (소유자도 프로젝트 멤버로 등록되어야 조회 등에 편리함)
         newProject.addMember(creatorId, ProjectRole.MEMBER);
-
         return projectRepository.save(newProject);
     }
 
-    // [MODIFIED] 프로젝트 탈퇴 로직
+    // [4] 프로젝트 탈퇴
     @Transactional
     public void leaveProject(String userId, Long projectId) {
         Long userPkId = getUserPkId(userId);
-
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("탈퇴할 프로젝트를 찾을 수 없습니다."));
 
-        // 멤버인지 확인
         boolean isMember = project.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(userId));
 
-        if (!isMember) {
-            throw new IllegalArgumentException("해당 프로젝트의 멤버가 아닙니다.");
-        }
+        if (!isMember) throw new IllegalArgumentException("해당 프로젝트의 멤버가 아닙니다.");
 
-        // 소유자는 탈퇴 불가
         if (project.getUsersId() != null && project.getUsersId().equals(userPkId)) {
             throw new IllegalArgumentException("프로젝트 소유자는 탈퇴할 수 없습니다.");
         }
-
-        // 탈퇴 처리 (ProjectMember 엔티티 제거)
         project.removeMember(userId);
     }
 
-    // [유지] 프로젝트 삭제
+    // [5] 프로젝트 삭제
     @Transactional
     public void delete(long id) {
         projectRepository.deleteById(id);
     }
 
-    // [유지] 프로젝트 수정 (권한 체크 추가 가능)
+    // [6] 프로젝트 수정
     @Transactional
     public Project update(Long id, UpdateProjectRequest request) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("not found: " + id));
-
-        // (선택) 여기서 수정 권한 체크 로직 추가 가능
         project.update(request);
-
         return project;
     }
 
@@ -154,23 +159,22 @@ public class ProjectService {
         return project.getProjectName();
     }
 
-    // [MODIFIED] 프로젝트 멤버 조회: ProjectMember -> userId 추출
+    // [7] 멤버 목록 조회 (DTO 반환)
     @Transactional(readOnly = true)
-    public List<User> getProjectMembers(Long projectId) {
+    public List<ProjectMemberDto> getProjectMembers(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // ProjectMember 엔티티에서 userId(String) 목록 추출
-        Set<String> memberLoginIds = project.getMembers().stream()
-                .map(ProjectMember::getUserId)
-                .collect(Collectors.toSet());
-
-        if (memberLoginIds.isEmpty()) {
-            return List.of();
+        List<ProjectMemberDto> dtoList = new ArrayList<>();
+        for (ProjectMember pm : project.getMembers()) {
+            User user = userRepository.findById(pm.getUserId()).orElse(null);
+            if (user != null) {
+                Long ownerPk = project.getUsersId();
+                boolean isOwner = ownerPk != null && ownerPk.equals(user.getPk_id());
+                dtoList.add(new ProjectMemberDto(user, pm.getRole(), isOwner));
+            }
         }
-
-        // UserRepository에서 User 엔티티 리스트 조회
-        return userRepository.findAllByIdIn(memberLoginIds);
+        return dtoList;
     }
 
     @Transactional(readOnly = true)
@@ -179,28 +183,21 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
     }
 
-    // [MODIFIED] 팀원 초대: 역할(MEMBER) 지정하여 추가
+    // [8] 멤버 초대
     @Transactional
-    public void inviteMember(Long projectId, String inviterId, String emailOrId) { // inviterId 추가
-
-        // 1. 프로젝트 조회
+    public void inviteMember(Long projectId, String inviterId, String emailOrId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        // 2.  [권한 체크] 초대하는 사람이 '소유자'인지 확인
-        Long inviterPk = getUserPkId(inviterId); // 로그인한 사람의 PK 조회
-
-        // 프로젝트 소유자(usersId)와 초대자(inviterPk)가 다르면 예외 발생
+        Long inviterPk = getUserPkId(inviterId);
         if (!project.getUsersId().equals(inviterPk)) {
             throw new SecurityException("프로젝트 소유자만 멤버를 초대할 수 있습니다.");
         }
 
-        // 3. 초대할 사용자 조회
         User userToInvite = userRepository.findById(emailOrId)
                 .orElseGet(() -> userRepository.findByEmail(emailOrId)
                         .orElseThrow(() -> new IllegalArgumentException("'" + emailOrId + "' 사용자를 찾을 수 없습니다.")));
 
-        // 4. 이미 참여 중인지 확인 (기존 로직 수정: ProjectMember 리스트 확인)
         boolean isAlreadyMember = project.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(userToInvite.getId()));
 
@@ -208,17 +205,28 @@ public class ProjectService {
             throw new IllegalArgumentException("이미 참여 중인 멤버입니다.");
         }
 
-        // 5. 멤버 추가 (기본 역할 MEMBER)
         project.addMember(userToInvite.getId(), ProjectRole.MEMBER);
     }
 
-    // [MODIFIED] 멤버 여부 확인
     @Transactional(readOnly = true)
     public boolean isUserInProject(String userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
-
         return project.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(userId));
+    }
+
+    // [9] 멤버 역할 변경
+    @Transactional
+    public void updateMemberRole(Long projectId, String ownerId, String targetUserId, ProjectRole newRole) {
+        Project project = projectRepository.findById(projectId).orElseThrow();
+        Long ownerPk = getUserPkId(ownerId);
+        if (!project.getUsersId().equals(ownerPk)) {
+            throw new SecurityException("소유자만 역할을 변경할 수 있습니다.");
+        }
+        project.getMembers().stream()
+                .filter(m -> m.getUserId().equals(targetUserId))
+                .findFirst()
+                .ifPresent(member -> member.setRole(newRole));
     }
 }

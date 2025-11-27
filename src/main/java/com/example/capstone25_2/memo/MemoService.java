@@ -1,6 +1,7 @@
 package com.example.capstone25_2.memo;
 
 import com.example.capstone25_2.memo.dto.*;
+import com.example.capstone25_2.project.ProjectService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,84 +12,81 @@ import java.util.stream.Collectors;
 @Service
 public class MemoService {
     private final MemoRepository memoRepository;
-    private final ApplicationEventPublisher eventPublisher; // 이벤트 발행기 주입
+    private final ApplicationEventPublisher eventPublisher;
+    private final ProjectService projectService; // 필드 선언은 잘 하셨습니다.
 
-    //RequiredArgsConstructor 대신
-    public MemoService(MemoRepository memoRepository, ApplicationEventPublisher eventPublisher) {
+    // ⭐️ [수정] 생성자 파라미터에 projectService를 추가해야 합니다 ⭐️
+    public MemoService(MemoRepository memoRepository,
+                       ApplicationEventPublisher eventPublisher,
+                       ProjectService projectService) { // 여기 추가!
         this.memoRepository = memoRepository;
         this.eventPublisher = eventPublisher;
+        this.projectService = projectService; // 여기 할당!
     }
+
+    // (또는 생성자를 다 지우고 클래스 위에 @RequiredArgsConstructor 를 붙여도 됩니다)
 
     public List<MemoListResponse> findList() {
-
-        // 1. DB에서 Memo 엔티티 리스트를 최신순으로 조회
+        // (참고: 실제로는 여기서도 findByProjectId(...)로 필터링해야 특정 프로젝트 메모만 보입니다)
         List<Memo> memos = memoRepository.findAllByOrderByModifiedAtDesc();
-
-        // 2. Stream API를 사용하여 List<Memo>를 List<MemoListResponse>로 변환
-        return memos.stream()                  // memos 리스트를 스트림으로 변환
-                .map(MemoListResponse::new)    // 각 Memo 객체를 MemoListResponse 생성자에 넣어 새 DTO 객체 생성
-                // memo -> new MemoListResponse(memo)
-                .collect(Collectors.toList()); // 새로 만들어진 DTO 객체들을 모아 리스트로 만듦
+        return memos.stream()
+                .map(MemoListResponse::new)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public Memo save(AddMemoRequest request) {
+    public Memo save(AddMemoRequest request, String userId) { // userId 추가됨 (굿!)
+        // 🛑 쓰기 권한 검사
+        projectService.validateWriteAccess(request.getProjectId(), userId);
+
         Memo newMemo = Memo.from(request);
+
         Memo savedMemo = memoRepository.save(newMemo);
-
-        //메모 생성 이벤트 발생
         eventPublisher.publishEvent(new MemoEvent(savedMemo, MemoEvent.EventType.CREATED));
-
-        return memoRepository.save(newMemo);
+        return savedMemo;
     }
+
     @Transactional
-    public Memo updateList(long id, UpdateMemoListRequest requestContent) {
-        /*
-        Article aritcle2 = blogRepository.findById(id);
-        if (article2 == null) {
-            throw new IllegalArgumentException("not found: " + id);
-        }
-         */
+    public Memo updateList(long id, UpdateMemoListRequest requestContent, String userId) { // userId 추가됨
         Memo memo = memoRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("not found: " + id));
+
+        // 🛑 쓰기 권한 검사
+        projectService.validateWriteAccess(memo.getProjectId(), userId);
 
         memo.updateList(requestContent);
-
-        // 메모 수정 이벤트 발행
-        // JPA 영속성 컨텍스트가 닫히기 전이므로 데이터는 업데이트 상태입니다.
         eventPublisher.publishEvent(new MemoEvent(memo, MemoEvent.EventType.UPDATED));
-
         return memo;
     }
 
     @Transactional
-    public Memo updateCanvas(long id, UpdateMemoCanvasRequest requestPosition) {
-
+    public Memo updateCanvas(long id, UpdateMemoCanvasRequest requestPosition, String userId) { // userId 추가됨
         Memo memo = memoRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("not found: " + id));
 
-        memo.updateCanvas(requestPosition);
+        // 🛑 쓰기 권한 검사
+        projectService.validateWriteAccess(memo.getProjectId(), userId);
 
+        memo.updateCanvas(requestPosition);
         return memo;
     }
 
+    @Transactional
+    public void delete(long id, String userId) { // userId 추가됨
+        Memo memo = memoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
 
+        // 🛑 쓰기 권한 검사
+        projectService.validateWriteAccess(memo.getProjectId(), userId);
 
-    public void delete(long id) {
-        memoRepository.deleteById(id);
+        memoRepository.delete(memo);
     }
 
     public List<MemoCanvasResponse> findCanvas() {
-
-        // 1. DB에서 Memo 엔티티 리스트를 최신순으로 조회
+        // (참고: 여기서도 findByProjectId(...) 사용 권장)
         List<Memo> memos = memoRepository.findAll();
-
-        // 2. Stream API를 사용하여 List<Memo>를 List<MemoListResponse>로 변환
-        return memos.stream()                  // memos 리스트를 스트림으로 변환
-                .map(MemoCanvasResponse::new)  // 각 Memo 객체를 MemoListResponse 생성자에 넣어 새 DTO 객체 생성
-                // memo -> new MemoListResponse(memo)
-                .collect(Collectors.toList()); // 새로 만들어진 DTO 객체들을 모아 리스트로 만듦
+        return memos.stream()
+                .map(MemoCanvasResponse::new)
+                .collect(Collectors.toList());
     }
-
-
 }
