@@ -3,6 +3,7 @@ package com.example.capstone25_2.project;
 import com.example.capstone25_2.project.dto.AddProjectRequest;
 import com.example.capstone25_2.project.dto.ProjectMemberDto;
 import com.example.capstone25_2.project.dto.ProjectResponse;
+import com.example.capstone25_2.project.dto.UpdateProjectRequest;
 import com.example.capstone25_2.user.User;
 import com.example.capstone25_2.user.UserService;
 import jakarta.servlet.http.HttpSession; // HttpSession import
@@ -237,4 +238,77 @@ public class ProjectWebController {
 
         return "redirect:/projects/" + projectId + "/members";
     }
+
+    @GetMapping("/projects/{projectId}/settings")
+    public String projectSettingsPage(@PathVariable Long projectId, HttpSession session, Model model) {
+        try {
+            String userId = getUserId(session);
+
+            // 권한 체크 (멤버여야 들어감)
+            if (!projectService.checkUserAccessById(userId, projectId)) {
+                return "redirect:/projects";
+            }
+
+            Project project = projectService.getProjectById(projectId);
+            Long loginUserPk = projectService.getUserPkId(userId);
+
+            model.addAttribute("project", project);
+            model.addAttribute("isOwner", project.getUsersId().equals(loginUserPk)); // 소유자 여부 전달
+            model.addAttribute("pageTitle", project.getProjectName() + " 설정");
+
+            return "settings/settings"; // 설정 페이지 템플릿 반환
+        } catch (Exception e) {
+            return "redirect:/projects";
+        }
+    }
+
+    // ⭐️ [신규] 프로젝트 삭제 요청 ⭐️
+    @PostMapping("/projects/{projectId}/delete")
+    public String deleteProject(@PathVariable Long projectId,
+                                @RequestParam String password, // 추가됨
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(session);
+
+            // 서비스 호출 (비밀번호 검증 포함)
+            projectService.deleteProject(projectId, userId, password);
+
+            redirectAttributes.addFlashAttribute("successMessage", "프로젝트가 성공적으로 삭제되었습니다.");
+            return "redirect:/projects";
+
+        } catch (SecurityException | IllegalArgumentException e) { // 비밀번호 틀림 등
+            redirectAttributes.addFlashAttribute("errorMessage", "삭제 실패: " + e.getMessage());
+            // 실패 시 다시 설정 페이지로
+            return "redirect:/projects/" + projectId + "/settings";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "알 수 없는 오류가 발생했습니다.");
+            return "redirect:/projects/" + projectId + "/settings";
+        }
+    }
+
+    @PostMapping("/projects/{projectId}/update")
+    public String updateProject(@PathVariable Long projectId,
+                                @ModelAttribute UpdateProjectRequest request,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(session); // 로그인한 사용자 ID
+
+            // 서비스 호출 (권한 체크 + 수정)
+            projectService.updateProject(projectId, userId, request);
+
+            redirectAttributes.addFlashAttribute("successMessage", "프로젝트 설정이 저장되었습니다.");
+
+        } catch (SecurityException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "권한 오류: " + e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
+        }
+
+        // 설정 페이지로 다시 리다이렉트
+        return "redirect:/projects/" + projectId + "/settings";
+    }
+
+
 }

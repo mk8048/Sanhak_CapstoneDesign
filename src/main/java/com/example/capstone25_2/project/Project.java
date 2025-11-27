@@ -33,7 +33,7 @@ public class Project {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = true, updatable = false)
+    @Column(nullable = true)
     private LocalDate deadline;
 
     // 👑 프로젝트 소유자 (유일한 관리자)

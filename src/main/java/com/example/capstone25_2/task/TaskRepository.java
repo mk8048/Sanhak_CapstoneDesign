@@ -13,4 +13,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     // 검색용 메서드
     List<Task> findByTitleContaining(String title);
+
+    void deleteByProjectId(Long projectId);
 }
