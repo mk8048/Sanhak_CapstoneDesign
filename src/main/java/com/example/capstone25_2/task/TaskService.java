@@ -3,7 +3,9 @@ package com.example.capstone25_2.task;
 import com.example.capstone25_2.project.Project;
 import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.project.ProjectService; // ⭐️ 추가
+import com.example.capstone25_2.task.dto.AddTaskRequestDTO;
 import com.example.capstone25_2.task.dto.TaskProgressDTO;
+import com.example.capstone25_2.task.dto.UpdateTaskRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,14 +47,37 @@ public class TaskService {
     }
 
     @Transactional
-    public void addTask(Long projectId, String title, String userId) {
-        projectService.validateWriteAccess(projectId, userId);
+    public void addTask(AddTaskRequestDTO request, String userId) {
+        // 1. 권한 체크
+        projectService.validateWriteAccess(request.getProjectId(), userId);
 
+        // 2. 저장
         taskRepository.save(Task.builder()
-                .projectId(projectId)
-                .title(title)
+                .projectId(request.getProjectId())
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .assignee(request.getAssignee())
                 .isCompleted(false)
                 .build());
+    }
+
+    @Transactional
+    public void updateTask(Long taskId, UpdateTaskRequestDTO request, String userId) {
+        // 1. 할 일 조회
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 업무입니다."));
+
+        // 2. 권한 체크 (VIEWER 차단)
+        projectService.validateWriteAccess(task.getProjectId(), userId);
+
+        // 3. 내용 수정 (Dirty Checking으로 자동 저장)
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setStartDate(request.getStartDate());
+        task.setEndDate(request.getEndDate());
+        task.setAssignee(request.getAssignee());
     }
 
     @Transactional

@@ -3,7 +3,9 @@ package com.example.capstone25_2.task;
 import com.example.capstone25_2.project.ProjectRole; // ⭐️ Enum import
 import com.example.capstone25_2.project.ProjectRepository;
 import com.example.capstone25_2.project.ProjectService;
+import com.example.capstone25_2.task.dto.AddTaskRequestDTO;
 import com.example.capstone25_2.task.dto.TaskProgressDTO;
+import com.example.capstone25_2.task.dto.UpdateTaskRequestDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -71,9 +73,9 @@ public class TaskController {
     }
 
     @PostMapping("/add")
-    public String addTask(@RequestParam Long projectId, @RequestParam String title, HttpSession session) {
-        taskService.addTask(projectId, title, getUserId(session));
-        return "redirect:/tasks?projectId=" + projectId;
+    public String addTask(@ModelAttribute AddTaskRequestDTO request, HttpSession session) { // DTO로 받음
+        taskService.addTask(request, getUserId(session)); // DTO 전달
+        return "redirect:/tasks?projectId=" + request.getProjectId();
     }
 
     @PostMapping("/{taskId}/toggle")
@@ -87,6 +89,20 @@ public class TaskController {
     public String deleteTask(@PathVariable Long taskId, HttpSession session) {
         Long projectId = taskService.findProjectIdByTaskId(taskId);
         taskService.deleteTask(taskId, getUserId(session));
+        return "redirect:/tasks?projectId=" + projectId;
+    }
+
+    @PostMapping("/{taskId}/update")
+    public String updateTask(@PathVariable Long taskId,
+                             @ModelAttribute UpdateTaskRequestDTO request,
+                             HttpSession session) {
+
+        // 서비스 호출 (수정)
+        taskService.updateTask(taskId, request, getUserId(session));
+
+        // 수정을 마친 후 다시 해당 프로젝트의 업무 목록으로 이동하기 위해 Project ID 조회
+        Long projectId = taskService.findProjectIdByTaskId(taskId);
+
         return "redirect:/tasks?projectId=" + projectId;
     }
 }

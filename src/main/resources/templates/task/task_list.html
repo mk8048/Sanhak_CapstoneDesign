@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <title>업무 리스트</title>
     <style>
-        /* --- 1. 전체 컨테이너 --- */
         .task-page-container {
             max-width: 1000px;
             margin: 0 auto;
@@ -15,7 +14,6 @@
             color: #333;
         }
 
-        /* --- 2. 카드 공통 스타일 --- */
         .task-card {
             background-color: #ffffff;
             border: 1px solid #e0e0e0;
@@ -40,7 +38,6 @@
             padding-bottom: 10px;
         }
 
-        /* --- 3. 진행률(Progress) 바 스타일 --- */
         .progress-row {
             display: flex;
             gap: 30px;
@@ -76,24 +73,28 @@
             transition: width 0.6s ease;
         }
 
-        /* 시간 경과율 색상 (회색) */
-        .fill-time { background-color: #6c757d; }
-        /* 업무 달성률 색상 (초록) */
-        .fill-work { background-color: #28a745; }
+        .fill-time {
+            background-color: #6c757d;
+        }
 
-        /* --- 4. 입력 폼 스타일 --- */
-        .add-task-form {
+        .fill-work {
+            background-color: #28a745;
+        }
+
+        .add-task-form-extended {
             display: flex;
+            flex-direction: column;
             gap: 10px;
         }
 
         .task-input {
-            flex-grow: 1;
             padding: 10px 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 1rem;
             outline: none;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .btn-add {
@@ -105,11 +106,13 @@
             font-weight: bold;
             cursor: pointer;
             white-space: nowrap;
+            margin-top: 5px;
         }
 
-        .btn-add:hover { background-color: #0056b3; }
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
 
-        /* --- 5. 리스트 아이템 스타일 --- */
         .task-list {
             list-style: none;
             padding: 0;
@@ -117,19 +120,21 @@
         }
 
         .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
+            background: #fff;
             border-bottom: 1px solid #f0f0f0;
+            padding: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .task-item:last-child { border-bottom: none; }
+        .task-item:last-child {
+            border-bottom: none;
+        }
 
         .task-title {
             font-size: 1.1rem;
-            flex-grow: 1;
-            margin-right: 15px;
+            font-weight: bold;
         }
 
         .task-done {
@@ -150,13 +155,16 @@
             border: 1px solid transparent;
         }
 
-        /* 완료/취소 버튼 */
         .btn-toggle {
             background-color: white;
             border-color: #28a745;
             color: #28a745;
         }
-        .btn-toggle:hover { background-color: #28a745; color: white; }
+
+        .btn-toggle:hover {
+            background-color: #28a745;
+            color: white;
+        }
 
         .btn-toggle.active {
             background-color: #6c757d;
@@ -164,15 +172,17 @@
             color: white;
         }
 
-        /* 삭제 버튼 */
         .btn-delete {
             background-color: white;
             border-color: #dc3545;
             color: #dc3545;
         }
-        .btn-delete:hover { background-color: #dc3545; color: white; }
 
-        /* 뷰어용 읽기 전용 텍스트 */
+        .btn-delete:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
         .viewer-badge {
             font-size: 0.85rem;
             color: #888;
@@ -182,11 +192,60 @@
             border: 1px solid #ddd;
         }
 
-        /* 빈 상태 메시지 */
         .empty-msg {
             text-align: center;
             padding: 30px;
             color: #888;
+        }
+
+        .task-details {
+            font-size: 0.9rem;
+            color: #666;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .edit-form-container {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .btn-edit {
+            background-color: white;
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        .btn-edit:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -208,7 +267,8 @@
                         <div class="progress-bg">
                             <div class="progress-fill fill-time"
                                  th:style="'width: ' + ${progress.timeProgress} + '%'"
-                                 th:text="${progress.timeProgress} + '%'">0%</div>
+                                 th:text="${progress.timeProgress} + '%'">0%
+                            </div>
                         </div>
                     </div>
                     <div class="progress-item">
@@ -216,17 +276,45 @@
                         <div class="progress-bg">
                             <div class="progress-fill fill-work"
                                  th:style="'width: ' + ${progress.actualProgress} + '%'"
-                                 th:text="${progress.actualProgress} + '%'">0%</div>
+                                 th:text="${progress.actualProgress} + '%'">0%
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="task-card" th:if="${userRole != T(com.example.capstone25_2.project.ProjectRole).VIEWER}">
-                <form action="/tasks/add" method="post" class="add-task-form">
+                <h3 style="margin-top: 0; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                    ➕ 새 업무 추가
+                </h3>
+
+                <form action="/tasks/add" method="post" class="add-task-form-extended">
                     <input type="hidden" name="projectId" th:value="${progress.projectId}">
-                    <input type="text" name="title" class="task-input" placeholder="새로운 할 일을 입력하세요" required>
-                    <button type="submit" class="btn-add">+ 추가</button>
+
+                    <input type="text" name="title" class="task-input" placeholder="업무 제목 (필수)" required
+                           style="font-weight: bold;">
+
+                    <textarea name="description" class="task-input" placeholder="상세 설명 (선택)" rows="3"
+                              style="resize: vertical;"></textarea>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem; font-weight: bold; color: #555;">시작일</label>
+                            <input type="date" name="startDate" class="task-input">
+                        </div>
+
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem; font-weight: bold; color: #555;">마감일</label>
+                            <input type="date" name="endDate" class="task-input">
+                        </div>
+
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem; font-weight: bold; color: #555;">담당자</label>
+                            <input type="text" name="assignee" class="task-input" placeholder="이름 또는 닉네임">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-add">등록하기</button>
                 </form>
             </div>
 
@@ -238,40 +326,115 @@
                         등록된 할 일이 없습니다.
                     </li>
 
-                    <li class="task-item" th:each="task : ${progress.tasks}">
-                        <span class="task-title"
-                              th:text="${task.title}"
-                              th:classappend="${task.isCompleted} ? 'task-done' : ''">할 일 제목</span>
+                    <li class="task-item" th:each="task : ${progress.tasks}" style="display: block;">
 
-                        <div class="btn-group" th:if="${userRole != T(com.example.capstone25_2.project.ProjectRole).VIEWER}">
+                        <div th:id="'view-mode-' + ${task.id}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="task-title"
+                                  th:text="${task.title}"
+                                  th:classappend="${task.isCompleted} ? 'task-done' : ''">할 일 제목</span>
 
-                            <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" style="margin:0;">
-                                <button type="submit" class="btn-sm btn-toggle"
-                                        th:classappend="${task.isCompleted} ? 'active' : ''">
-                                    <span th:text="${task.isCompleted} ? '취소' : '완료'"></span>
-                                </button>
-                            </form>
+                                <div class="btn-group"
+                                     th:if="${userRole != T(com.example.capstone25_2.project.ProjectRole).VIEWER}">
 
-                            <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="margin:0;"
-                                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                                <button type="submit" class="btn-sm btn-delete">삭제</button>
+                                    <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post"
+                                          style="margin:0;">
+                                        <button type="submit" class="btn-sm btn-toggle"
+                                                th:classappend="${task.isCompleted} ? 'active' : ''">
+                                            <span th:text="${task.isCompleted} ? '취소' : '완료'"></span>
+                                        </button>
+                                    </form>
+
+                                    <button type="button" class="btn-sm btn-edit"
+                                            th:if="${!task.isCompleted}"
+                                            th:onclick="'showEditForm(' + ${task.id} + ')'">수정
+                                    </button>
+
+                                    <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post"
+                                          style="margin:0;"
+                                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                        <button type="submit" class="btn-sm btn-delete">삭제</button>
+                                    </form>
+                                </div>
+
+                                <div th:if="${userRole == T(com.example.capstone25_2.project.ProjectRole).VIEWER}"
+                                     class="viewer-badge">
+                                    🔒 Read Only
+                                </div>
+                            </div>
+
+                            <div class="task-details" style="margin-top: 10px;">
+                                <div th:if="${task.description != null and !task.description.isEmpty()}"
+                                     th:text="${task.description}"
+                                     style="margin-bottom: 8px; white-space: pre-wrap;"></div>
+
+                                <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #555;">
+                                <span th:if="${task.assignee}">
+                                    👤 <strong>담당:</strong> <span th:text="${task.assignee}"></span>
+                                </span>
+                                    <span th:if="${task.startDate != null or task.endDate != null}">
+                                    📅
+                                    <span th:if="${task.startDate}" th:text="${task.startDate}"></span>
+                                    <span th:if="${task.startDate != null and task.endDate != null}"> ~ </span>
+                                    <span th:if="${task.endDate}" th:text="${task.endDate}"></span>
+                                </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:id="'edit-mode-' + ${task.id}" class="edit-form-container" style="display: none;">
+                            <form th:action="@{/tasks/{id}/update(id=${task.id})}" method="post"
+                                  class="add-task-form-extended">
+
+                                <label style="font-weight: bold; font-size: 0.9rem;">제목</label>
+                                <input type="text" name="title" class="task-input" th:value="${task.title}" required>
+
+                                <label style="font-weight: bold; font-size: 0.9rem;">상세 설명</label>
+                                <textarea name="description" class="task-input" rows="3"
+                                          th:text="${task.description}"></textarea>
+
+                                <div style="display: flex; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.8rem;">시작일</label>
+                                        <input type="date" name="startDate" class="task-input"
+                                               th:value="${task.startDate}">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.8rem;">마감일</label>
+                                        <input type="date" name="endDate" class="task-input" th:value="${task.endDate}">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.8rem;">담당자</label>
+                                        <input type="text" name="assignee" class="task-input"
+                                               th:value="${task.assignee}">
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                                    <button type="button" class="btn-cancel"
+                                            th:onclick="'hideEditForm(' + ${task.id} + ')'">취소
+                                    </button>
+                                    <button type="submit" class="btn-save">저장</button>
+                                </div>
                             </form>
                         </div>
 
-                        <div th:if="${userRole == T(com.example.capstone25_2.project.ProjectRole).VIEWER}"
-                             class="viewer-badge">
-                            🔒 Read Only
-                        </div>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <div class="empty-msg" style="padding: 50px;" th:unless="${progress != null}">
-            <h3>표시할 프로젝트가 없습니다.</h3>
-            <p>프로젝트를 먼저 선택하거나 생성해주세요.</p>
-        </div>
+        <script>
+            function showEditForm(taskId) {
+                document.getElementById('view-mode-' + taskId).style.display = 'none';
+                document.getElementById('edit-mode-' + taskId).style.display = 'block';
+            }
 
+            function hideEditForm(taskId) {
+                document.getElementById('view-mode-' + taskId).style.display = 'block';
+                document.getElementById('edit-mode-' + taskId).style.display = 'none';
+            }
+        </script>
     </div>
 </div>
 
