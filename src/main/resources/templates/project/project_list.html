@@ -50,9 +50,13 @@
             text-align: center;
         }
 
-        .project-item:hover {
-            background-color: #f1f3f5;
+        .project-item {
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .project-item:hover {
+            background-color: #e9ecef;
         }
 
         .button-group {
@@ -81,7 +85,6 @@
             transition: background-color 0.2s;
         }
 
-        /* 생성 버튼 색상 */
         .create-button {
             background-color: #007bff;
         }
@@ -95,15 +98,6 @@
         }
         .logout-button:hover {
             background-color: #5a6268;
-        }
-
-        td a {
-            color: #007bff;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        td a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -126,11 +120,14 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="project : ${projectList}" class="project-item">
+        <tr th:each="project : ${projectList}"
+            class="project-item"
+            th:onclick="|location.href='@{/projects/{id}/main(id=${project.projectId})}'|">
+
             <td th:text="${project.projectId}" style="text-align: center;">1</td>
-            <td>
-                <a th:href="@{'/projects/' + ${project.projectId} + '/main'}" th:text="${project.projectName}">프로젝트명</a>
-            </td>
+
+            <td th:text="${project.projectName}" style="color: #007bff; font-weight: bold;">프로젝트명</td>
+
             <td th:text="${project.description}">설명</td>
             <td th:text="${#temporals.format(project.createdAt, 'yyyy-MM-dd')}" style="text-align: center;">2025-10-27</td>
             <td th:text="${project.allMemberIds}">멤버들</td>

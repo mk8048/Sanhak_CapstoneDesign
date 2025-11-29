@@ -92,12 +92,14 @@
         /* --- 기존 사이드바 메뉴 스타일 유지 --- */
         .sidebar .nav-menu {
             list-style: none;
+            padding: 0;
         }
 
         .sidebar .nav-menu li {
-            padding: 15px 10px;
+            padding: 0;
             border-radius: 8px;
             cursor: pointer;
+            margin-bottom: 5px;
         }
 
         .sidebar .nav-menu li:hover {
@@ -105,8 +107,18 @@
         }
 
         .sidebar .nav-menu a {
+            display: block;       /* 블록 요소로 변경하여 전체 너비 사용 */
+            width: 100%;          /* 너비 100% */
+            height: 100%;         /* 높이 100% */
+            padding: 15px 10px;   /* 🚨 패딩을 li에서 여기로 이동 */
             text-decoration: none;
             color: inherit;
+            box-sizing: border-box; /* 패딩 포함 크기 계산 */
+        }
+
+        .sidebar .nav-menu li.menu-toggle,
+        .sidebar .nav-menu li.disabled-item {
+            padding: 15px 10px;
         }
 
         /* --- 서브메뉴 스타일 --- */
