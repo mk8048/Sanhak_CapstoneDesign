@@ -53,6 +53,7 @@
             color: inherit;
             display: block;
             width: 100%;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -69,14 +70,15 @@
             <div th:unless="${#lists.isEmpty(notifications)}">
                 <div th:each="noti : ${notifications}" class="notification-item"
                     th:classappend="${!noti.read} ? 'unread'">
-                    <a th:href="@{${noti.relatedUrl}}" class="notification-link">
+                    <div th:onclick="markAsReadAndRedirect([[${noti.id}]], [[${noti.relatedUrl}]])"
+                        class="notification-link">
                         <div class="notification-content">
                             <div class="notification-message" th:text="${noti.message}">알림 메시지</div>
                             <div class="notification-time"
                                 th:text="${#temporals.format(noti.createdAt, 'yyyy-MM-dd HH:mm')}">2025-11-25 12:00
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
