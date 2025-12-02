@@ -59,7 +59,7 @@ public class MemoController {
 
     @PostMapping("/api/memo")
     public ResponseEntity<Memo> addMemo(@RequestBody AddMemoRequest request, HttpSession session) {
-        // ⭐️ userId 전달
+
         Memo savedMemo = memoService.save(request, getUserId(session));
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMemo);
     }
@@ -80,7 +80,7 @@ public class MemoController {
 
     @DeleteMapping("/api/memo/{id}")
     public ResponseEntity<Void> deleteMemo(@PathVariable Long id, HttpSession session) {
-        // ⭐️ userId 전달
+
         memoService.delete(id, getUserId(session));
         return ResponseEntity.ok().build();
     }
@@ -89,7 +89,6 @@ public class MemoController {
     public ResponseEntity<Memo> UpdateMemoPosition(@PathVariable long id,
                                                    @RequestBody UpdateMemoCanvasRequest request,
                                                    HttpSession session) {
-        // ⭐️ userId 전달
         Memo updatePositionMemo = memoService.updateCanvas(id, request, getUserId(session));
         return ResponseEntity.ok().body(updatePositionMemo);
     }
@@ -107,7 +106,6 @@ public class MemoController {
     public ResponseEntity<Memo> UpdateMemoContent(@PathVariable long id,
                                                   @RequestBody UpdateMemoListRequest request,
                                                   HttpSession session) {
-        // ⭐️ userId 전달
         Memo updateContentMemo = memoService.updateList(id, request, getUserId(session));
         return ResponseEntity.ok().body(updateContentMemo);
     }

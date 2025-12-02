@@ -28,7 +28,7 @@ public class ProjectService {
     public Long getUserPkId(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
-        return user.getPk_id();
+        return user.getPkId();
     }
 
     private String getLoginIdByUserPk(Long userPkId) {
@@ -78,18 +78,31 @@ public class ProjectService {
 
     // 쓰기/수정 권한 검증
     public void validateWriteAccess(Long projectId, String userId) {
+        System.out.println("=== DEBUG CHECK ===");
+        System.out.println("요청한 Project ID: " + projectId);
+        System.out.println("요청한 User ID: [" + userId + "]");
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        Long userPk = getUserPkId(userId);
-        if (project.getUsersId().equals(userPk)) {
-            return;
+        // 1. 멤버 리스트에서 user 찾기 (String의 equals 메서드로 정확히 비교)
+        ProjectMember member = project.getMembers().stream()
+                .filter(m -> m.getUserId().equals(userId))
+                .findFirst()
+                .orElse(null);
+
+        // 2. 멤버가 아니라면 소유자인지 2차 확인 (안전장치)
+        if (member == null) {
+            Long userPk = getUserPkId(userId);
+            if (project.getUsersId() != null && project.getUsersId().equals(userPk)) {
+                return; // 소유자라면 통과 (role 체크 불필요)
+            }
+            // 소유자도 아니고 멤버도 아니면 예외 발생
+            throw new SecurityException("프로젝트 멤버가 아닙니다.");
         }
 
-        ProjectRole role = project.getMemberRole(userId)
-                .orElseThrow(() -> new SecurityException("프로젝트 멤버가 아닙니다."));
-
-        if (role == ProjectRole.VIEWER) {
+        // 3. 멤버인 경우 권한(VIEWER) 체크
+        if (member.getRole() == ProjectRole.VIEWER) {
             throw new SecurityException("읽기 전용 권한입니다. (수정 불가)");
         }
     }
@@ -184,7 +197,7 @@ public class ProjectService {
             User user = userRepository.findById(pm.getUserId()).orElse(null);
             if (user != null) {
                 Long ownerPk = project.getUsersId();
-                boolean isOwner = ownerPk != null && ownerPk.equals(user.getPk_id());
+                boolean isOwner = ownerPk != null && ownerPk.equals(user.getPkId());
                 dtoList.add(new ProjectMemberDto(user, pm.getRole(), isOwner));
             }
         }
@@ -268,7 +281,7 @@ public class ProjectService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        if (!project.getUsersId().equals(user.getPk_id())) {
+        if (!project.getUsersId().equals(user.getPkId())) {
             throw new SecurityException("프로젝트 소유자만 삭제할 수 있습니다.");
         }
 

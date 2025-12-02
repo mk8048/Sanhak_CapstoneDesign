@@ -52,6 +52,8 @@ public class MemoPageController {
             return "redirect:/user/login";
         }
 
+        model.addAttribute("userId", userId);
+
         ProjectRole role = projectService.getUserRoleInProject(projectId, userId);
         model.addAttribute("userRole", role);
         model.addAttribute("pageTitle", "메모장");

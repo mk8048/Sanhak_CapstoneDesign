@@ -180,10 +180,13 @@
             const memoListContent = document.getElementById('memoListContent');
             const addMemoBtn = document.getElementById('addMemoBtn');
 
-            // ⭐️ [수정] Thymeleaf 변수 -> JS 변수 변환 (뷰어 여부 확인) ⭐️
+            // [수정] Thymeleaf 변수 -> JS 변수 변환 (뷰어 여부 확인)
             /*<![CDATA[*/
             const isViewer = [[${userRole == T(com.example.capstone25_2.project.ProjectRole).VIEWER}]];
             /*]]>*/
+
+            const globalProjectId = [[${currentProjectId}]];
+            const globalUserId = [[${userId}]];
 
             // 전역 변수
             let isDragging = false;
@@ -200,7 +203,7 @@
                 addMemoBtn.addEventListener('click', createNewMemo);
             }
 
-            // ⭐️ [수정] 뷰어일 경우 드래그 이벤트 등록하지 않음 (또는 핸들러 내부에서 막음)
+            // [수정] 뷰어일 경우 드래그 이벤트 등록하지 않음 (또는 핸들러 내부에서 막음)
             canvas.addEventListener('mousedown', dragStart);
             document.addEventListener('mouseup', dragEnd);
             document.addEventListener('mousemove', drag);
@@ -230,9 +233,13 @@
             function createNewMemo() {
                 if (isViewer) return; // 안전장치
 
+                // UserId 서버에서 처리하는 로직 필요
+                const currentProjectId = globalProjectId;
+                const currentUserId = globalUserId;
+
                 const newMemo = {
-                    projectId: 1, // 실제로는 컨텍스트에서 가져와야 함 (Controller에서 세션값 사용하므로 무시될 수도 있음)
-                    authorId: "user1",
+                    projectId: currentProjectId,
+                    authorId: currentUserId,
                     content: "새 메모",
                     x_pos: 50,
                     y_pos: 50,
@@ -259,7 +266,7 @@
             function renderMemoCanvas(memo) {
                 const memoEl = document.createElement('div');
                 memoEl.className = `canvas-memo ${getMemoColorClass(memo.color)}`;
-                // ⭐️ [수정] 뷰어일 때 커서 스타일 변경 클래스 추가
+                // [수정] 뷰어일 때 커서 스타일 변경 클래스 추가
                 if (isViewer) memoEl.classList.add('viewer-mode');
 
                 memoEl.style.left = `${memo.x_pos}px`;
@@ -267,7 +274,7 @@
                 memoEl.dataset.id = memo.id;
                 memoEl.draggable = false;
 
-                // ⭐️ [수정] 뷰어일 때 닫기 버튼 숨김 & contenteditable 끄기
+                // [수정] 뷰어일 때 닫기 버튼 숨김 & contenteditable 끄기
                 const closeBtnHtml = isViewer ? '' : `<span class="btn-close-memo" onclick="deleteMemo(${memo.id})">×</span>`;
                 const isEditable = isViewer ? 'false' : 'true';
 
@@ -311,7 +318,7 @@
 
             // 메모 삭제
             window.deleteMemo = function (id) {
-                if (isViewer) return; // ⭐️ 안전장치
+                if (isViewer) return; // 안전장치
                 if (!confirm('메모를 삭제하시겠습니까?')) return;
 
                 fetch(`/api/memo/${id}`, { method: 'DELETE' })
@@ -330,7 +337,7 @@
 
             // 메모 내용 업데이트
             function updateMemoContent(id, content) {
-                if (isViewer) return; // ⭐️ 안전장치
+                if (isViewer) return; // 안전장치
 
                 fetch(`/api/memo/list/${id}`, {
                     method: 'PUT',
@@ -347,7 +354,7 @@
 
             // 메모 위치 업데이트
             function updateMemoPosition(id, x, y) {
-                if (isViewer) return; // ⭐️ 안전장치
+                if (isViewer) return; // 안전장치
 
                 const memoEl = canvas.querySelector(`.canvas-memo[data-id="${id}"]`);
                 const content = memoEl.querySelector('.canvas-memo-content').innerText;
@@ -368,7 +375,7 @@
 
             // 드래그 앤 드롭 로직
             function dragStart(e) {
-                if (isViewer) return; // ⭐️ 뷰어는 드래그 불가
+                if (isViewer) return; // 뷰어는 드래그 불가
 
                 const target = e.target.closest('.canvas-memo');
                 if (!target || e.target.classList.contains('btn-close-memo') || e.target.classList.contains('canvas-memo-content')) {
@@ -399,7 +406,7 @@
 
             function drag(e) {
                 if (isDragging && currentDraggable) {
-                    if (isViewer) return; // ⭐️ 안전장치
+                    if (isViewer) return; // 안전장치
                     e.preventDefault();
 
                     let currentX = e.clientX - initialX;
